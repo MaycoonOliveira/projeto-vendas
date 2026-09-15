@@ -38,4 +38,34 @@ test.describe("menu mobile", () => {
     await expect(page).toHaveURL(/\/galeria$/);
     await expect(dialog).not.toBeVisible();
   });
+
+  // Regressão: com a navbar "sólida" (rolagem), o backdrop-filter do <header>
+  // criava um bloco de contenção que prendia o drawer `fixed` à altura da
+  // navbar. O drawer precisa cobrir a viewport inteira e mostrar os CTAs.
+  test("cobre a viewport inteira mesmo após rolar a página", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await page.getByRole("button", { name: /abrir menu/i }).click();
+
+    const dialog = page.getByRole("dialog", { name: /^menu$/i });
+    await expect(dialog).toBeVisible();
+
+    const panel = page.locator("#mobile-menu > div").nth(1);
+    const box = await panel.boundingBox();
+    const viewport = page.viewportSize();
+    expect(box).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    // O painel deve ocupar praticamente toda a altura da viewport (não só a navbar).
+    expect(box!.height).toBeGreaterThan(viewport!.height * 0.9);
+
+    // Os CTAs no rodapé do drawer ficam acessíveis.
+    await expect(
+      dialog.getByRole("link", { name: /reservar/i }).first(),
+    ).toBeVisible();
+    await expect(
+      dialog.getByRole("link", { name: /whatsapp/i }).first(),
+    ).toBeVisible();
+  });
 });
