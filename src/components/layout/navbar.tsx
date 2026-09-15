@@ -38,82 +38,90 @@ export function Navbar() {
   const solid = scrolled || !isHome;
 
   return (
-    <header
-      className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-colors duration-300",
-        solid
-          ? "border-b border-border bg-background/85 backdrop-blur-md"
-          : "border-b border-transparent bg-transparent",
-      )}
-    >
-      <Container className="flex h-16 items-center justify-between gap-4 lg:h-20">
-        <Link
-          href="/"
-          className={cn(
-            "font-display text-xl tracking-tight transition-colors sm:text-2xl",
-            solid ? "text-foreground" : "text-white",
-          )}
-          aria-label={`${siteConfig.name} — página inicial`}
-        >
-          {siteConfig.name}
-        </Link>
+    <>
+      <header
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 transition-colors duration-300",
+          solid
+            ? "border-border bg-background/85 border-b backdrop-blur-md"
+            : "border-b border-transparent bg-transparent",
+        )}
+      >
+        <Container className="flex h-16 items-center justify-between gap-4 lg:h-20">
+          <Link
+            href="/"
+            className={cn(
+              "font-display text-xl tracking-tight transition-colors sm:text-2xl",
+              solid ? "text-foreground" : "text-white",
+            )}
+            aria-label={`${siteConfig.name} — página inicial`}
+          >
+            {siteConfig.name}
+          </Link>
 
-        {/* Navegação desktop */}
-        <nav
-          className="hidden items-center gap-8 lg:flex"
-          aria-label="Navegação principal"
-        >
-          {siteConfig.nav.map((item) => {
-            const active =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "text-sm font-medium transition-colors",
-                  solid
-                    ? "text-foreground/75 hover:text-foreground"
-                    : "text-white/80 hover:text-white",
-                  active && (solid ? "text-foreground" : "text-white"),
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+          {/* Navegação desktop */}
+          <nav
+            className="hidden items-center gap-8 lg:flex"
+            aria-label="Navegação principal"
+          >
+            {siteConfig.nav.map((item) => {
+              const active =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    solid
+                      ? "text-foreground/75 hover:text-foreground"
+                      : "text-white/80 hover:text-white",
+                    active && (solid ? "text-foreground" : "text-white"),
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
-          <ReserveButton
-            size="sm"
-            variant={solid ? "primary" : "light"}
-            source="navbar"
-          />
-        </div>
+          <div className="hidden items-center gap-3 lg:flex">
+            <ReserveButton
+              size="sm"
+              variant={solid ? "primary" : "light"}
+              source="navbar"
+            />
+          </div>
 
-        {/* Botão do menu mobile */}
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label="Abrir menu"
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          className={cn(
-            "inline-flex size-11 items-center justify-center rounded-full transition-colors lg:hidden",
-            solid
-              ? "text-foreground hover:bg-foreground/5"
-              : "text-white hover:bg-white/10",
-          )}
-        >
-          <Menu className="size-6" aria-hidden />
-        </button>
-      </Container>
+          {/* Botão do menu mobile */}
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Abrir menu"
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            className={cn(
+              "inline-flex size-11 items-center justify-center rounded-full transition-colors lg:hidden",
+              solid
+                ? "text-foreground hover:bg-foreground/5"
+                : "text-white hover:bg-white/10",
+            )}
+          >
+            <Menu className="size-6" aria-hidden />
+          </button>
+        </Container>
+      </header>
 
-      {/* Drawer mobile */}
+      {/*
+        Drawer mobile: precisa ficar FORA do <header>. Quando a navbar fica
+        "sólida" ela ganha `backdrop-blur`, e um ancestral com backdrop-filter
+        cria um bloco de contenção para elementos `position: fixed`, prendendo o
+        drawer à altura da navbar (bug do menu). Como irmão do <header>, o
+        `fixed inset-0` volta a se posicionar em relação à viewport.
+      */}
       <div
         id="mobile-menu"
         role="dialog"
@@ -128,14 +136,14 @@ export function Navbar() {
         <div
           onClick={() => setOpen(false)}
           className={cn(
-            "absolute inset-0 bg-foreground/40 backdrop-blur-sm transition-opacity duration-300",
+            "bg-foreground/40 absolute inset-0 backdrop-blur-sm transition-opacity duration-300",
             open ? "opacity-100" : "opacity-0",
           )}
           aria-hidden
         />
         <div
           className={cn(
-            "absolute right-0 top-0 flex h-full w-[82%] max-w-sm flex-col bg-background shadow-[var(--shadow-lift)] transition-transform duration-300 ease-out",
+            "bg-background absolute top-0 right-0 flex h-full w-[82%] max-w-sm flex-col shadow-[var(--shadow-lift)] transition-transform duration-300 ease-out",
             open ? "translate-x-0" : "translate-x-full",
           )}
         >
@@ -145,7 +153,7 @@ export function Navbar() {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Fechar menu"
-              className="inline-flex size-11 items-center justify-center rounded-full text-foreground hover:bg-foreground/5"
+              className="text-foreground hover:bg-foreground/5 inline-flex size-11 items-center justify-center rounded-full"
             >
               <X className="size-6" aria-hidden />
             </button>
@@ -179,12 +187,12 @@ export function Navbar() {
             })}
           </nav>
 
-          <div className="mt-auto flex flex-col gap-3 border-t border-border px-6 py-6">
+          <div className="border-border mt-auto flex flex-col gap-3 border-t px-6 py-6">
             <ReserveButton className="w-full" source="mobile-menu" />
             <WhatsappButton className="w-full" source="mobile-menu" />
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }
