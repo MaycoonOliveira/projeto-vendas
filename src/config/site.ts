@@ -63,12 +63,11 @@ export const siteConfig = {
 
   /** Canais de contato. Números são PLACEHOLDER — substituir antes de publicar. */
   contact: {
-    // TODO_CLIENTE: número real com DDI+DDD, apenas dígitos (ex.: 5524999998888)
-    whatsapp: "5524999999999",
-    whatsappIsPlaceholder: true,
-    // TODO_CLIENTE
-    phoneDisplay: "+55 (24) 99999-9999",
-    phoneE164: "+5524999999999",
+    // Número real (DDI+DDD, apenas dígitos).
+    whatsapp: "5521999820042",
+    whatsappIsPlaceholder: false,
+    phoneDisplay: "+55 (21) 99982-0042",
+    phoneE164: "+5521999820042",
     // TODO_CLIENTE
     email: "contato@casacarram.com.br",
     /** Mensagem pré-preenchida ao abrir o WhatsApp. */
