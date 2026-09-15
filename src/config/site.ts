@@ -21,7 +21,9 @@
 
 /** URL pública do site (usada em canonical, Open Graph, sitemap). */
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+  // `||` (e não `??`) garante o fallback também quando a env var existe porém
+  // está vazia (ex.: definida sem valor na Vercel), evitando `new URL("")`.
+  process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ||
   "https://www.casacarram.com.br"; // TODO_CLIENTE: confirmar domínio final
 
 export type NavItem = {
