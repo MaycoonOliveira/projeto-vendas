@@ -1,26 +1,133 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * ===========================================================================
+ * DESIGN SYSTEM — Casa Carram
+ * ---------------------------------------------------------------------------
+ * Paleta inspirada na serra: verde da Mata Atlântica (primary), tom argila
+ * (accent) e uma base off-white acolhedora. Tema único e claro, com a
+ * fotografia como protagonista. Ver docs/design-system.md.
+ * ===========================================================================
+ */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme {
+  /* Cores — base */
+  --color-background: #fbf9f5;
+  --color-surface: #ffffff;
+  --color-foreground: #1f1d1a;
+  --color-muted: #f2ede4;
+  --color-muted-foreground: #6e6a62;
+  --color-border: #e7e1d6;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Cores — marca */
+  --color-primary: #33503f;
+  --color-primary-hover: #2a4234;
+  --color-primary-foreground: #f6f4ee;
+  --color-accent: #b9704b;
+  --color-accent-foreground: #ffffff;
+
+  /* Tipografia */
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+
+  /* Raio e sombras */
+  --radius: 0.75rem;
+  --shadow-soft: 0 1px 2px rgba(31, 29, 26, 0.04),
+    0 8px 30px rgba(31, 29, 26, 0.06);
+  --shadow-lift: 0 20px 50px -20px rgba(31, 29, 26, 0.28);
+
+  /* Larguras/escala de container */
+  --breakpoint-2xl: 96rem;
+
+  /* Animações */
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(1.25rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* --------------------------------------------------------------------------- */
+/* Base                                                                        */
+/* --------------------------------------------------------------------------- */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 6rem; /* compensa a navbar fixa ao usar âncoras */
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "kern", "liga";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-primary) 22%, transparent);
+    color: var(--color-foreground);
+  }
+
+  /* Foco visível e acessível em toda a navegação por teclado */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------- */
+/* Utilitários                                                                 */
+/* --------------------------------------------------------------------------- */
+@utility text-balance {
+  text-wrap: balance;
+}
+
+/* Título de seção com "olho" (eyebrow) em caixa alta e espaçamento */
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent);
 }
