@@ -28,22 +28,29 @@ function withSecurityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
+// Rotas de auth públicas dentro de /admin (não exigem sessão).
+const PUBLIC_ADMIN_ROUTES = new Set([
+  "/admin/login",
+  "/admin/esqueci-senha",
+  "/admin/redefinir-senha",
+]);
+
 export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
-  const isLoginRoute = pathname === "/admin/login";
+  const isPublicAdmin = PUBLIC_ADMIN_ROUTES.has(pathname);
 
   if (isAdmin) {
     const sessionCookie = getSessionCookie(request);
 
     // Sem cookie em rota admin protegida → login (otimista; a DAL revalida no DB).
-    if (!sessionCookie && !isLoginRoute) {
+    if (!sessionCookie && !isPublicAdmin) {
       const url = new URL("/admin/login", request.url);
       if (pathname !== "/admin") url.searchParams.set("redirect", pathname);
       return withSecurityHeaders(NextResponse.redirect(url));
     }
-    // Com cookie tentando ver o login → painel.
-    if (sessionCookie && isLoginRoute) {
+    // Com cookie tentando ver uma rota pública de auth → painel.
+    if (sessionCookie && isPublicAdmin) {
       return withSecurityHeaders(
         NextResponse.redirect(new URL("/admin", request.url)),
       );

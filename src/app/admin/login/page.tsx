@@ -13,9 +13,9 @@ export const dynamic = "force-dynamic";
 export default async function AdminLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string; reset?: string }>;
 }) {
-  const { redirect } = await searchParams;
+  const { redirect, reset } = await searchParams;
   const redirectTo =
     redirect && redirect.startsWith("/admin") ? redirect : undefined;
 
@@ -28,6 +28,11 @@ export default async function AdminLoginPage({
           </h1>
           <p className="mt-1 text-sm text-foreground/60">Painel administrativo</p>
         </div>
+        {reset ? (
+          <p className="mb-5 rounded-lg bg-green-50 px-3 py-2 text-center text-sm text-green-700">
+            Senha redefinida. Faça login com a nova senha.
+          </p>
+        ) : null}
         <LoginForm redirectTo={redirectTo} />
       </div>
     </div>

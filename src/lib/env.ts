@@ -35,6 +35,13 @@ const EnvSchema = z.object({
    */
   BETTER_AUTH_SECRET: z.string().min(1).optional(),
   BETTER_AUTH_URL: z.string().min(1).optional(),
+
+  /**
+   * E-mail transacional (Resend). Opcionais: sem `RESEND_API_KEY`, o envio faz fallback para
+   * log no servidor (dev), sem quebrar o fluxo (útil antes de verificar o domínio remetente).
+   */
+  RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

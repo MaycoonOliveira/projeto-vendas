@@ -4,6 +4,7 @@ import { nextCookies } from "better-auth/next-js";
 
 import { db } from "../db";
 import * as schema from "../db/schema";
+import { sendEmail } from "./email";
 
 /**
  * Instância do Better Auth (Fase 2) — autenticação administrativa.
@@ -47,6 +48,23 @@ export const auth = betterAuth({
     disableSignUp: true,
     minPasswordLength: 12,
     requireEmailVerification: false,
+    resetPasswordTokenExpiresIn: 60 * 30, // 30 min (token de uso único)
+    revokeSessionsOnPasswordReset: true, // invalida todas as sessões ao trocar a senha
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Redefinição de senha — Casa Carram",
+        text: `Recebemos um pedido para redefinir a senha do painel da Casa Carram.
+
+Abra o link abaixo (expira em 30 minutos):
+${url}
+
+Se você não solicitou, ignore este e-mail — sua senha permanece a mesma.`,
+        html: `<p>Recebemos um pedido para redefinir a senha do painel da Casa Carram.</p>
+<p><a href="${url}">Redefinir minha senha</a> (o link expira em 30 minutos).</p>
+<p>Se você não solicitou, ignore este e-mail — sua senha permanece a mesma.</p>`,
+      });
+    },
   },
   user: {
     additionalFields: {
