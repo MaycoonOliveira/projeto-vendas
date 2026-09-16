@@ -28,6 +28,13 @@ const EnvSchema = z.object({
    * Quando ausente, o fluxo de migration cai para `DATABASE_URL`.
    */
   DIRECT_URL: z.string().min(1).optional(),
+
+  /**
+   * Better Auth (Fase 2). Opcionais no schema para não quebrar `build`/migrations quando
+   * a auth ainda não é exercida; `getAuthEnv()` exige-os onde a auth realmente roda.
+   */
+  BETTER_AUTH_SECRET: z.string().min(1).optional(),
+  BETTER_AUTH_URL: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -54,4 +61,16 @@ export function getEnv(): Env {
 export function getMigrationConnectionString(): string {
   const env = getEnv();
   return env.DIRECT_URL ?? env.DATABASE_URL;
+}
+
+/** Env exigido pela camada de autenticação. Lança erro claro se algo faltar. */
+export function getAuthEnv(): { secret: string; baseURL: string } {
+  const env = getEnv();
+  if (!env.BETTER_AUTH_SECRET) {
+    throw new Error("BETTER_AUTH_SECRET é obrigatória para a autenticação.");
+  }
+  return {
+    secret: env.BETTER_AUTH_SECRET,
+    baseURL: env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  };
 }
