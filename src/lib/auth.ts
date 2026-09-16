@@ -4,27 +4,35 @@ import { nextCookies } from "better-auth/next-js";
 
 import { db } from "../db";
 import * as schema from "../db/schema";
-import { getAuthEnv } from "./env";
-
-const { secret, baseURL } = getAuthEnv();
 
 /**
  * Instância do Better Auth (Fase 2) — autenticação administrativa.
  *
  * Decisões (ver docs/security/SECURITY-ARCHITECTURE.md e QUINTA ETAPA do plano):
- * - E-mail/senha COM `disableSignUp` (hóspedes não logam; admins criados via seed/servidor).
- * - Sessões persistidas em DB (revogáveis) via `drizzleAdapter`.
- * - `role`/`isActive` como additionalFields no `user` (base p/ RBAC no V2), `input: false`
- *   para impedir escalonamento de privilégio pela API pública.
- * - Política de senha: mínimo 12 caracteres.
+ * - E-mail/senha COM `disableSignUp` (hóspedes não logam; admins criados via seed — `scripts/`).
+ * - Sessões persistidas em DB (revogáveis) via `drizzleAdapter`; expiração absoluta + renovação.
+ * - `role`/`isActive` como additionalFields no `user` (RBAC no V2), `input: false` (anti-escalonamento).
+ * - Senha: mínimo 12 caracteres.
+ * - Rate limit nativo (memória por instância no V1; store persistente = follow-up não bloqueante).
  *
- * O schema destas tabelas (`user`/`session`/`account`/`verification`) é gerado pela CLI do
- * Better Auth e versionado no Drizzle (migrations = fonte de verdade). Após gerar, o schema é
- * ligado ao adapter via `{ schema }`.
+ * Secret: lido de `BETTER_AUTH_SECRET`. O placeholder existe SÓ para o `next build` (CI) não
+ * quebrar na análise estática — nenhuma auth roda em build. Em runtime o secret real é exigido
+ * (Vercel env / `.env.local`); o route handler valida (`assertAuthConfigured`).
  */
+const BUILD_ONLY_SECRET =
+  "BUILD_ONLY_PLACEHOLDER_SECRET_DO_NOT_USE_AT_RUNTIME_0000000000";
+
+export function assertAuthConfigured() {
+  if (!process.env.BETTER_AUTH_SECRET) {
+    throw new Error(
+      "BETTER_AUTH_SECRET ausente em runtime — configure a variável de ambiente.",
+    );
+  }
+}
+
 export const auth = betterAuth({
-  secret,
-  baseURL,
+  secret: process.env.BETTER_AUTH_SECRET ?? BUILD_ONLY_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -52,6 +60,16 @@ export const auth = betterAuth({
   },
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
+  },
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 100,
+    customRules: {
+      "/sign-in/email": { window: 900, max: 10 }, // ~10 tentativas / 15 min
+      "/forget-password": { window: 900, max: 5 },
+      "/reset-password": { window: 900, max: 10 },
+    },
   },
   plugins: [nextCookies()],
 });
