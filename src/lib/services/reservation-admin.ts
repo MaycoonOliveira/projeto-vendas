@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, lte, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -382,6 +382,114 @@ export async function upcomingArrivals(limitN = 8): Promise<ReservationListItem[
     .orderBy(reservation.checkIn)
     .limit(limitN);
   return rows;
+}
+
+function reservationListSelect() {
+  return {
+    id: reservation.id,
+    publicCode: reservation.publicCode,
+    status: reservation.status,
+    checkIn: reservation.checkIn,
+    checkOut: reservation.checkOut,
+    nights: reservation.nights,
+    guestsCount: reservation.guestsCount,
+    totalPriceCents: reservation.totalPriceCents,
+    source: reservation.source,
+    holdExpiresAt: reservation.holdExpiresAt,
+    guestName: guest.fullName,
+    accommodationName: accommodation.name,
+  };
+}
+
+export type OperationalSnapshot = {
+  today: string;
+  arrivalsToday: ReservationListItem[];
+  departuresToday: ReservationListItem[];
+  inHouse: ReservationListItem[];
+  occupiedToday: number;
+  activeAccommodations: number;
+  pendingCount: number;
+  expiringHolds: ReservationListItem[];
+};
+
+/** Retrato operacional do dia para o dashboard (uma leitura consolidada). */
+export async function operationalSnapshot(): Promise<OperationalSnapshot> {
+  const today = todayInSaoPaulo();
+  const STAYING = ["CONFIRMED", "CHECKED_IN"] as const;
+
+  const baseQuery = () =>
+    db
+      .select(reservationListSelect())
+      .from(reservation)
+      .innerJoin(guest, eq(guest.id, reservation.guestId))
+      .innerJoin(accommodation, eq(accommodation.id, reservation.accommodationId));
+
+  const [arrivalsToday, departuresToday, inHouse, counts] = await Promise.all([
+    baseQuery()
+      .where(and(inArrayStatus(STAYING), eq(reservation.checkIn, today)))
+      .orderBy(reservation.checkIn)
+      .limit(50),
+    baseQuery()
+      .where(and(inArrayStatus(STAYING), eq(reservation.checkOut, today)))
+      .orderBy(reservation.checkOut)
+      .limit(50),
+    baseQuery()
+      .where(
+        and(
+          inArrayStatus(STAYING),
+          lte(reservation.checkIn, today),
+          gt(reservation.checkOut, today),
+        ),
+      )
+      .orderBy(reservation.checkIn)
+      .limit(50),
+    db.execute<{
+      occupied: number;
+      active_acc: number;
+      pending: number;
+    }>(sql`
+      SELECT
+        (SELECT count(DISTINCT o.accommodation_id)::int FROM occupancy o
+           LEFT JOIN reservation r ON r.id = o.reservation_id
+          WHERE o.active AND o.during @> ${today}::date
+            AND NOT (o.source_type='RESERVATION' AND r.status='PENDING' AND r.hold_expires_at < now())
+        ) AS occupied,
+        (SELECT count(*)::int FROM accommodation WHERE is_active AND deleted_at IS NULL) AS active_acc,
+        (SELECT count(*)::int FROM reservation
+          WHERE status='PENDING' AND (hold_expires_at IS NULL OR hold_expires_at >= now())
+        ) AS pending`),
+  ]);
+
+  const expiringHolds = await baseQuery()
+    .where(
+      and(
+        eq(reservation.status, "PENDING"),
+        gt(reservation.holdExpiresAt, sql`now()`),
+        lte(reservation.holdExpiresAt, sql`now() + interval '12 hours'`),
+      ),
+    )
+    .orderBy(reservation.holdExpiresAt)
+    .limit(20);
+
+  const c = counts[0] ?? { occupied: 0, active_acc: 0, pending: 0 };
+  return {
+    today,
+    arrivalsToday,
+    departuresToday,
+    inHouse,
+    occupiedToday: c.occupied,
+    activeAccommodations: c.active_acc,
+    pendingCount: c.pending,
+    expiringHolds,
+  };
+}
+
+/** Helper: filtro por lista de status (evita `inArray` importado só p/ isto). */
+function inArrayStatus(statuses: readonly string[]) {
+  return sql`${reservation.status} IN (${sql.join(
+    statuses.map((s) => sql`${s}`),
+    sql`, `,
+  )})`;
 }
 
 export type GuestListItem = {
