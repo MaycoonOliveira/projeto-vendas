@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/admin/toaster";
 import { SETTING_FIELDS } from "@/lib/settings-fields";
 import { saveSettingsAction, type FormState } from "./actions";
 
@@ -15,6 +16,10 @@ export function SettingsForm({ values }: { values: Record<string, string> }) {
     saveSettingsAction,
     {},
   );
+
+  useEffect(() => {
+    if (state.ok) toast("Configurações salvas.");
+  }, [state]);
 
   return (
     <form action={action} className="flex flex-col gap-4">
@@ -29,8 +34,10 @@ export function SettingsForm({ values }: { values: Record<string, string> }) {
         </div>
       ))}
 
-      {state.ok ? (
-        <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">Configurações salvas.</p>
+      {state.error ? (
+        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          {state.error}
+        </p>
       ) : null}
 
       <div>

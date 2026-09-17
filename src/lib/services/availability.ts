@@ -2,7 +2,7 @@ import { and, asc, eq, gte, inArray, isNull, lte, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { accommodation, occupancy, rateOverride, reservation } from "@/db/schema";
-import { nightsBetween } from "@/lib/dates";
+import { eachNight, nightsBetween } from "@/lib/dates";
 import { calculatePrice, type PriceResult } from "@/lib/pricing";
 import type { Accommodation } from "@/lib/services/accommodation";
 
@@ -110,5 +110,56 @@ export async function findAvailableAccommodations(input: {
         priceCents: o.priceCents,
       })),
     }),
+  }));
+}
+
+/**
+ * Disponibilidade agregada da propriedade por noite, para o **calendário público**.
+ * Uma noite é `occupied` quando **todas** as acomodações ativas estão ocupadas nela
+ * (reserva ativa/hold válido ou bloqueio) — ou seja, não há nada livre para ofertar.
+ *
+ * Não expõe NENHUM dado identificável (código de reserva, hóspede, motivo de bloqueio):
+ * devolve apenas `{ date, occupied }`. Respeita expire-on-read (ignora holds vencidos).
+ */
+export type DayAvailability = { date: string; occupied: boolean };
+
+export async function getPropertyAvailability(
+  from: string,
+  to: string,
+): Promise<DayAvailability[]> {
+  const totalRows = await db.execute<{ total: number }>(sql`
+    SELECT count(*)::int AS total FROM ${accommodation}
+    WHERE ${accommodation.isActive} = true AND ${accommodation.deletedAt} IS NULL`);
+  const totalActive = Number(totalRows[0]?.total ?? 0);
+
+  const days = eachNight(from, to);
+  if (totalActive === 0) return days.map((date) => ({ date, occupied: false }));
+
+  const rows = await db.execute<{
+    accommodation_id: string;
+    check_in: string;
+    check_out: string;
+  }>(sql`
+    SELECT o.accommodation_id, o.check_in, o.check_out
+    FROM ${occupancy} o
+    LEFT JOIN ${reservation} r ON r.id = o.reservation_id
+    WHERE o.active
+      AND o.during && daterange(${from}::date, ${to}::date, '[)')
+      AND NOT (o.source_type = 'RESERVATION' AND r.status = 'PENDING' AND r.hold_expires_at < now())`);
+
+  // Para cada noite, conjunto de acomodações ocupadas. occupied = todas ocupadas.
+  const occupiedByDay = new Map<string, Set<string>>();
+  for (const row of rows) {
+    for (const night of eachNight(row.check_in, row.check_out)) {
+      if (night < from || night >= to) continue;
+      const set = occupiedByDay.get(night) ?? new Set<string>();
+      set.add(row.accommodation_id);
+      occupiedByDay.set(night, set);
+    }
+  }
+
+  return days.map((date) => ({
+    date,
+    occupied: (occupiedByDay.get(date)?.size ?? 0) >= totalActive,
   }));
 }

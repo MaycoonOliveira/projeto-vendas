@@ -44,7 +44,8 @@ export async function confirmReservationAction(formData: FormData): Promise<void
   if (id) await confirmReservation(id, admin.userId);
   revalidatePath(`/admin/reservas/${id}`);
   revalidatePath("/admin/reservas");
-  redirect(`/admin/reservas/${id}`);
+  revalidatePath("/admin");
+  redirect(`/admin/reservas/${id}?flash=confirmed`);
 }
 
 export async function cancelReservationAction(formData: FormData): Promise<void> {
@@ -54,7 +55,8 @@ export async function cancelReservationAction(formData: FormData): Promise<void>
   if (id) await cancelReservation(id, admin.userId, reason);
   revalidatePath(`/admin/reservas/${id}`);
   revalidatePath("/admin/reservas");
-  redirect(`/admin/reservas/${id}`);
+  revalidatePath("/admin");
+  redirect(`/admin/reservas/${id}?flash=cancelled`);
 }
 
 export async function completeReservationAction(formData: FormData): Promise<void> {
@@ -62,7 +64,8 @@ export async function completeReservationAction(formData: FormData): Promise<voi
   const id = String(formData.get("id") ?? "");
   if (id) await completeReservation(id, admin.userId);
   revalidatePath(`/admin/reservas/${id}`);
-  redirect(`/admin/reservas/${id}`);
+  revalidatePath("/admin");
+  redirect(`/admin/reservas/${id}?flash=completed`);
 }
 
 export async function noShowReservationAction(formData: FormData): Promise<void> {
@@ -70,7 +73,8 @@ export async function noShowReservationAction(formData: FormData): Promise<void>
   const id = String(formData.get("id") ?? "");
   if (id) await noShowReservation(id, admin.userId);
   revalidatePath(`/admin/reservas/${id}`);
-  redirect(`/admin/reservas/${id}`);
+  revalidatePath("/admin");
+  redirect(`/admin/reservas/${id}?flash=no_show`);
 }
 
 /** Edição de datas/hóspedes com optimistic locking. */
@@ -101,7 +105,8 @@ export async function editReservationAction(
   }
 
   revalidatePath(`/admin/reservas/${id}`);
-  redirect(`/admin/reservas/${id}?saved=1`);
+  revalidatePath("/admin");
+  redirect(`/admin/reservas/${id}?flash=saved`);
 }
 
 /** Reserva manual (nasce CONFIRMED, sem hold). */
@@ -147,5 +152,6 @@ export async function createManualReservationAction(
   }
 
   revalidatePath("/admin/reservas");
-  redirect(`/admin/reservas/${created.reservation.id}`);
+  revalidatePath("/admin");
+  redirect(`/admin/reservas/${created.reservation.id}?flash=created`);
 }

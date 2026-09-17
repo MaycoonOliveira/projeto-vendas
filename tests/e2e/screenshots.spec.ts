@@ -176,12 +176,6 @@ test.describe("Admin — Desktop", () => {
     await page.screenshot({ path: ss("admin-reservas") });
   });
 
-  test("admin-calendario", async ({ page }) => {
-    await page.goto("/admin/calendario");
-    await page.waitForLoadState("networkidle");
-    await page.screenshot({ path: ss("admin-calendario") });
-  });
-
   test("admin-bloqueios", async ({ page }) => {
     await page.goto("/admin/bloqueios");
     await page.waitForLoadState("networkidle");

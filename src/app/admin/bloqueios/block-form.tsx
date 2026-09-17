@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/admin/toaster";
 import { createBlockAction, type FormState } from "./actions";
 
 const inputClass =
@@ -18,6 +19,10 @@ export function BlockForm({
     createBlockAction,
     {},
   );
+
+  useEffect(() => {
+    if (state.ok) toast("Bloqueio criado.");
+  }, [state]);
 
   return (
     <form action={action} className="flex flex-col gap-3">
@@ -49,11 +54,6 @@ export function BlockForm({
       {state.error ? (
         <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {state.error}
-        </p>
-      ) : null}
-      {state.ok ? (
-        <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-          Bloqueio criado.
         </p>
       ) : null}
     </form>

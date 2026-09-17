@@ -37,7 +37,7 @@ export async function createBlockAction(
   }
 
   revalidatePath("/admin/bloqueios");
-  revalidatePath("/admin/calendario");
+  revalidatePath("/admin");
   return { ok: true };
 }
 
@@ -46,5 +46,5 @@ export async function deleteBlockAction(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (id) await deleteBlock(id, admin.userId);
   revalidatePath("/admin/bloqueios");
-  revalidatePath("/admin/calendario");
+  revalidatePath("/admin");
 }

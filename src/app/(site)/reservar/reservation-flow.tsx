@@ -2,13 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { formatCentsBRL } from "@/lib/utils";
+import { AvailabilityCalendar } from "./availability-calendar";
 
-const inputClass =
-  "h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25";
+const inputBase =
+  "h-11 w-full rounded-xl border bg-surface px-3 text-sm text-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/25";
 const labelClass = "mb-1.5 block text-xs font-medium text-foreground/70";
+
+function inputClass(hasError: boolean): string {
+  return `${inputBase} ${
+    hasError
+      ? "border-red-300 focus-visible:border-red-400"
+      : "border-border focus-visible:border-primary"
+  }`;
+}
 
 type AvailabilityResult = {
   id: string;
@@ -19,6 +29,8 @@ type AvailabilityResult = {
   minNights: number;
   price: { nights: number; totalCents: number; currency: string };
 };
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function todayISO(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(
@@ -41,6 +53,70 @@ async function fetchWithTimeout(
   }
 }
 
+const STEPS = ["Datas", "Escolha", "Seus dados"] as const;
+
+function Stepper({ current }: { current: number }) {
+  return (
+    <ol className="mb-8 flex items-center justify-center gap-2 sm:gap-4" aria-label="Etapas da reserva">
+      {STEPS.map((label, i) => {
+        const step = i + 1;
+        const done = step < current;
+        const active = step === current;
+        return (
+          <li key={label} className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2">
+              <span
+                aria-current={active ? "step" : undefined}
+                className={[
+                  "flex size-7 items-center justify-center rounded-full text-xs font-semibold transition-colors",
+                  done
+                    ? "bg-primary text-primary-foreground"
+                    : active
+                      ? "bg-primary text-primary-foreground ring-4 ring-primary/15"
+                      : "bg-muted text-foreground/50",
+                ].join(" ")}
+              >
+                {done ? <Check className="size-4" aria-hidden /> : step}
+              </span>
+              <span
+                className={`hidden text-sm sm:inline ${
+                  active ? "font-medium text-foreground" : "text-foreground/50"
+                }`}
+              >
+                {label}
+              </span>
+            </div>
+            {step < STEPS.length ? (
+              <span className="h-px w-6 bg-border sm:w-10" aria-hidden />
+            ) : null}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** Placeholder animado enquanto a disponibilidade é consultada. */
+function ResultsSkeleton() {
+  return (
+    <div className="mt-6 flex flex-col gap-4" aria-hidden>
+      {[0, 1].map((i) => (
+        <div
+          key={i}
+          className="animate-pulse rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]"
+        >
+          <div className="h-5 w-2/5 rounded bg-foreground/10" />
+          <div className="mt-3 h-3 w-3/4 rounded bg-foreground/10" />
+          <div className="mt-6 flex items-center justify-between">
+            <div className="h-6 w-24 rounded bg-foreground/10" />
+            <div className="h-10 w-28 rounded-full bg-foreground/10" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ReservationFlow() {
   const router = useRouter();
   const [checkin, setCheckin] = useState("");
@@ -56,12 +132,29 @@ export function ReservationFlow() {
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [touched, setTouched] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const minDate = todayISO();
 
+  const currentStep = selected ? 3 : results ? 2 : 1;
+
+  // Validação inline das datas.
+  const dateError =
+    checkin && checkout && checkout <= checkin
+      ? "O check-out deve ser depois do check-in."
+      : "";
+  const guestsError = guests < 1 ? "Informe ao menos 1 hóspede." : "";
+  const canSearch = Boolean(checkin && checkout) && !dateError && !guestsError;
+
+  // Validação inline dos dados do hóspede.
+  const nameError = touched && !fullName.trim() ? "Informe o nome completo." : "";
+  const emailError = touched && !EMAIL_RE.test(email) ? "Informe um e-mail válido." : "";
+  const phoneError = touched && !phone.trim() ? "Informe um telefone de contato." : "";
+
   async function search(e: React.FormEvent) {
     e.preventDefault();
+    if (!canSearch) return;
     setError(null);
     setResults(null);
     setSelected(null);
@@ -89,6 +182,10 @@ export function ReservationFlow() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!selected) return;
+    setTouched(true);
+    if (nameError || emailError || phoneError || !fullName.trim() || !EMAIL_RE.test(email) || !phone.trim()) {
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
@@ -130,12 +227,29 @@ export function ReservationFlow() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      {/* Passo 1 — datas e hóspedes */}
+      <Stepper current={currentStep} />
+
+      {/* Passo 1 — calendário + datas e hóspedes */}
       <form
         onSubmit={search}
         className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]"
       >
-        <div className="grid gap-4 sm:grid-cols-3">
+        <p className="mb-4 text-sm text-muted-foreground">
+          Selecione as datas no calendário ou informe abaixo. As noites em{" "}
+          <span className="font-medium text-amber-700">laranja</span> já estão reservadas.
+        </p>
+
+        <AvailabilityCalendar
+          checkin={checkin}
+          checkout={checkout}
+          minDate={minDate}
+          onSelectRange={(ci, co) => {
+            setCheckin(ci);
+            setCheckout(co);
+          }}
+        />
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">
           <div>
             <label htmlFor="checkin" className={labelClass}>
               Check-in
@@ -146,8 +260,11 @@ export function ReservationFlow() {
               required
               min={minDate}
               value={checkin}
-              onChange={(e) => setCheckin(e.target.value)}
-              className={inputClass}
+              onChange={(e) => {
+                setCheckin(e.target.value);
+                if (checkout && e.target.value >= checkout) setCheckout("");
+              }}
+              className={inputClass(false)}
             />
           </div>
           <div>
@@ -161,7 +278,8 @@ export function ReservationFlow() {
               min={checkin || minDate}
               value={checkout}
               onChange={(e) => setCheckout(e.target.value)}
-              className={inputClass}
+              aria-invalid={Boolean(dateError)}
+              className={inputClass(Boolean(dateError))}
             />
           </div>
           <div>
@@ -176,14 +294,36 @@ export function ReservationFlow() {
               required
               value={guests}
               onChange={(e) => setGuests(Number(e.target.value))}
-              className={inputClass}
+              aria-invalid={Boolean(guestsError)}
+              className={inputClass(Boolean(guestsError))}
             />
           </div>
         </div>
-        <Button type="submit" size="md" className="mt-5 w-full" disabled={searching}>
+
+        {dateError || guestsError ? (
+          <p role="alert" className="mt-2 text-xs text-red-700">
+            {dateError || guestsError}
+          </p>
+        ) : null}
+
+        <Button
+          type="submit"
+          size="md"
+          className="mt-5 w-full"
+          disabled={searching || !canSearch}
+        >
           {searching ? "Consultando…" : "Ver disponibilidade"}
         </Button>
       </form>
+
+      {/* Região de status para leitores de tela. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {searching
+          ? "Consultando disponibilidade."
+          : results
+            ? `${results.length} acomodação(ões) disponível(is).`
+            : ""}
+      </p>
 
       {error ? (
         <p role="alert" className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -192,7 +332,9 @@ export function ReservationFlow() {
       ) : null}
 
       {/* Passo 2 — resultados */}
-      {results && !selected ? (
+      {searching ? <ResultsSkeleton /> : null}
+
+      {!searching && results && !selected ? (
         <div className="mt-6">
           {results.length === 0 ? (
             <p className="rounded-xl border border-border bg-surface p-6 text-sm text-muted-foreground">
@@ -236,6 +378,7 @@ export function ReservationFlow() {
       {selected ? (
         <form
           onSubmit={submit}
+          noValidate
           className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]"
         >
           <div className="flex items-start justify-between gap-4">
@@ -269,8 +412,15 @@ export function ReservationFlow() {
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className={inputClass}
+                aria-invalid={Boolean(nameError)}
+                aria-describedby={nameError ? "fullName-error" : undefined}
+                className={inputClass(Boolean(nameError))}
               />
+              {nameError ? (
+                <p id="fullName-error" role="alert" className="mt-1 text-xs text-red-700">
+                  {nameError}
+                </p>
+              ) : null}
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -283,8 +433,15 @@ export function ReservationFlow() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={inputClass}
+                  aria-invalid={Boolean(emailError)}
+                  aria-describedby={emailError ? "email-error" : undefined}
+                  className={inputClass(Boolean(emailError))}
                 />
+                {emailError ? (
+                  <p id="email-error" role="alert" className="mt-1 text-xs text-red-700">
+                    {emailError}
+                  </p>
+                ) : null}
               </div>
               <div>
                 <label htmlFor="phone" className={labelClass}>
@@ -295,8 +452,15 @@ export function ReservationFlow() {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className={inputClass}
+                  aria-invalid={Boolean(phoneError)}
+                  aria-describedby={phoneError ? "phone-error" : undefined}
+                  className={inputClass(Boolean(phoneError))}
                 />
+                {phoneError ? (
+                  <p id="phone-error" role="alert" className="mt-1 text-xs text-red-700">
+                    {phoneError}
+                  </p>
+                ) : null}
               </div>
             </div>
             <div>
@@ -308,7 +472,7 @@ export function ReservationFlow() {
                 rows={3}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className={`${inputClass} h-auto py-2`}
+                className={`${inputClass(false)} h-auto py-2`}
               />
             </div>
           </div>

@@ -2,6 +2,7 @@ import { Hero } from "@/components/sections/hero";
 import { About } from "@/components/sections/about";
 import { Differentials } from "@/components/sections/differentials";
 import { Accommodations } from "@/components/sections/accommodations";
+import { HowItWorks } from "@/components/sections/how-it-works";
 import { GalleryPreview } from "@/components/sections/gallery-preview";
 import { Amenities } from "@/components/sections/amenities";
 import { Location } from "@/components/sections/location";
@@ -18,6 +19,7 @@ export default function HomePage() {
       <About />
       <Differentials />
       <Accommodations />
+      <HowItWorks />
       <GalleryPreview />
       <Amenities />
       <Testimonials />

@@ -19,14 +19,11 @@ export const metadata: Metadata = { title: "Reserva" };
 
 export default async function ReservaDetailPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string }>;
 }) {
   await requireAdmin();
   const { id } = await params;
-  const { saved } = await searchParams;
 
   const data = await getReservationAdmin(id);
   if (!data) notFound();
@@ -53,10 +50,6 @@ export default async function ReservaDetailPage({
           <span className="rounded bg-foreground/5 px-2 py-1 text-xs text-foreground/50">manual</span>
         ) : null}
       </div>
-
-      {saved ? (
-        <p className="mt-4 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">Alterações salvas.</p>
-      ) : null}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         {/* Reserva */}

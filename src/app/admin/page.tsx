@@ -2,8 +2,9 @@ import Link from "next/link";
 import { AlertCircle, CalendarClock, LogIn, LogOut, Users } from "lucide-react";
 
 import { AdminShell } from "@/components/admin/admin-shell";
+import { MonthCalendar } from "@/components/admin/month-calendar";
 import { requireAdmin } from "@/lib/dal";
-import { addDays, todayInSaoPaulo } from "@/lib/dates";
+import { todayInSaoPaulo } from "@/lib/dates";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
 import { listAccommodations } from "@/lib/services/accommodation";
 import { listOccupancyForCalendar } from "@/lib/services/block";
@@ -13,18 +14,38 @@ import {
 } from "@/lib/services/reservation-admin";
 import { formatCentsBRL } from "@/lib/utils";
 
-const WD = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
+}
+function shiftMonth(y: number, m: number, delta: number): { y: number; m: number } {
+  const idx = (m - 1 + delta + 12 * 100) % 12;
+  const yy = y + Math.floor((m - 1 + delta) / 12);
+  return { y: yy, m: idx + 1 };
+}
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ acc?: string; month?: string }>;
+}) {
   const session = await requireAdmin();
+  const { acc, month } = await searchParams;
+
   const snap = await operationalSnapshot();
   const accommodations = await listAccommodations();
-  const primary = accommodations.find((a) => a.isActive) ?? accommodations[0];
+  const activeAccs = accommodations.filter((a) => a.isActive);
+  const selectedAcc = activeAccs.find((a) => a.id === acc) ?? activeAccs[0];
 
   const today = todayInSaoPaulo();
-  const stripEnd = addDays(today, 14);
-  const entries = primary
-    ? await listOccupancyForCalendar(primary.id, today, stripEnd)
+  const monthStr = month && /^\d{4}-\d{2}$/.test(month) ? month : today.slice(0, 7);
+  const [y, m] = monthStr.split("-").map(Number);
+  const rangeFrom = `${monthStr}-01`;
+  const next = shiftMonth(y, m, 1);
+  const prev = shiftMonth(y, m, -1);
+  const rangeTo = `${next.y}-${pad(next.m)}-01`;
+
+  const entries = selectedAcc
+    ? await listOccupancyForCalendar(selectedAcc.id, rangeFrom, rangeTo)
     : [];
 
   const occPct =
@@ -35,9 +56,13 @@ export default async function AdminDashboardPage() {
   const kpis = [
     { icon: LogIn, label: "Chegadas hoje", value: snap.arrivalsToday.length, href: "/admin/reservas?status=CONFIRMED", tone: "text-green-700 bg-green-50" },
     { icon: LogOut, label: "Saídas hoje", value: snap.departuresToday.length, href: "/admin/reservas?status=CONFIRMED", tone: "text-blue-700 bg-blue-50" },
-    { icon: Users, label: "Hospedados", value: snap.inHouse.length, href: "/admin/calendario", tone: "text-foreground bg-muted" },
+    { icon: Users, label: "Hospedados", value: snap.inHouse.length, href: "/admin/reservas?status=CONFIRMED", tone: "text-foreground bg-muted" },
     { icon: CalendarClock, label: "Pendentes", value: snap.pendingCount, href: "/admin/reservas?status=PENDING", tone: "text-amber-700 bg-amber-50" },
   ];
+
+  const accHref = (id: string) => `/admin?acc=${id}&month=${monthStr}`;
+  const monthHref = (mm: { y: number; m: number }) =>
+    `/admin?${selectedAcc ? `acc=${selectedAcc.id}&` : ""}month=${mm.y}-${pad(mm.m)}`;
 
   return (
     <AdminShell>
@@ -99,34 +124,44 @@ export default async function AdminDashboardPage() {
         </section>
       )}
 
-      {/* Mini-calendário (14 dias) */}
-      {primary && (
+      {/* Calendário mensal de ocupação (no painel principal) */}
+      {selectedAcc ? (
         <section className="mt-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif text-lg font-semibold text-foreground">Próximos 14 dias</h2>
-            <Link href="/admin/calendario" className="text-sm font-medium text-primary hover:underline">
-              Calendário completo →
-            </Link>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-serif text-lg font-semibold text-foreground">Calendário de reservas</h2>
+            {activeAccs.length > 1 ? (
+              <div className="flex flex-wrap gap-2">
+                {activeAccs.map((a) => (
+                  <Link
+                    key={a.id}
+                    href={accHref(a.id)}
+                    aria-current={a.id === selectedAcc.id ? "true" : undefined}
+                    className={`rounded-full px-3 py-1.5 text-sm ${
+                      a.id === selectedAcc.id
+                        ? "bg-foreground text-white"
+                        : "border border-border text-foreground/70 hover:bg-foreground/5"
+                    }`}
+                  >
+                    {a.name}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
-          <div className="mt-3 grid grid-cols-7 gap-1.5">
-            {Array.from({ length: 14 }, (_, i) => {
-              const iso = addDays(today, i);
-              const wd = new Date(iso + "T12:00:00").getDay();
-              const hit = entries.find((e) => e.checkIn <= iso && iso < e.checkOut);
-              const tone = hit
-                ? hit.type === "BLOCK"
-                  ? "border-neutral-200 bg-neutral-100 text-neutral-500"
-                  : "border-amber-200 bg-amber-50 text-amber-800"
-                : "border-border bg-white text-foreground/70";
-              return (
-                <div key={iso} className={`rounded-lg border p-1.5 text-center ${tone}`} title={hit ? (hit.type === "BLOCK" ? "Bloqueio" : `Reserva ${hit.publicCode}`) : "Livre"}>
-                  <div className="text-[10px] uppercase text-foreground/40">{WD[wd]}</div>
-                  <div className="text-sm font-medium">{iso.slice(8)}</div>
-                </div>
-              );
-            })}
+          <div className="mt-3">
+            <MonthCalendar
+              month={monthStr}
+              entries={entries}
+              today={today}
+              prevHref={monthHref(prev)}
+              nextHref={monthHref(next)}
+            />
           </div>
         </section>
+      ) : (
+        <p className="mt-6 rounded-xl border border-border bg-white p-5 text-sm text-foreground/50">
+          Cadastre uma acomodação ativa para ver o calendário.
+        </p>
       )}
 
       {/* Chegadas e saídas de hoje */}

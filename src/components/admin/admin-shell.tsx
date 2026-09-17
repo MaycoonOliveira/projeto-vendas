@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 import { signOutAction } from "@/app/admin/actions";
+import { Toaster } from "@/components/admin/toaster";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,7 +17,6 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS: [href: string, label: string][] = [
   ["/admin", "Painel"],
   ["/admin/reservas", "Reservas"],
-  ["/admin/calendario", "Calendário"],
   ["/admin/acomodacoes", "Acomodações"],
   ["/admin/bloqueios", "Bloqueios"],
   ["/admin/hospedes", "Hóspedes"],
@@ -160,6 +160,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
+      <Toaster />
     </div>
   );
 }
