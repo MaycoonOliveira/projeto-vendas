@@ -26,6 +26,21 @@ function todayISO(): string {
   );
 }
 
+/** fetch com timeout (evita spinner infinito se o banco demorar a "acordar"). */
+async function fetchWithTimeout(
+  input: RequestInfo,
+  init: RequestInit = {},
+  ms = 30_000,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function ReservationFlow() {
   const router = useRouter();
   const [checkin, setCheckin] = useState("");
@@ -53,15 +68,19 @@ export function ReservationFlow() {
     setSearching(true);
     try {
       const qs = new URLSearchParams({ checkin, checkout, guests: String(guests) });
-      const res = await fetch(`/api/disponibilidade?${qs}`);
+      const res = await fetchWithTimeout(`/api/disponibilidade?${qs}`);
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Não foi possível consultar a disponibilidade.");
         return;
       }
       setResults(data.results as AvailabilityResult[]);
-    } catch {
-      setError("Falha de conexão. Tente novamente.");
+    } catch (err) {
+      setError(
+        err instanceof DOMException && err.name === "AbortError"
+          ? "A consulta demorou demais. Tente novamente em instantes."
+          : "Falha de conexão. Tente novamente.",
+      );
     } finally {
       setSearching(false);
     }
@@ -73,7 +92,7 @@ export function ReservationFlow() {
     setError(null);
     setSubmitting(true);
     try {
-      const res = await fetch("/api/reservas", {
+      const res = await fetchWithTimeout("/api/reservas", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -98,8 +117,12 @@ export function ReservationFlow() {
         return;
       }
       router.push(`/reserva/${data.publicCode}`);
-    } catch {
-      setError("Falha de conexão. Tente novamente.");
+    } catch (err) {
+      setError(
+        err instanceof DOMException && err.name === "AbortError"
+          ? "A solicitação demorou demais. Tente novamente em instantes."
+          : "Falha de conexão. Tente novamente.",
+      );
     } finally {
       setSubmitting(false);
     }

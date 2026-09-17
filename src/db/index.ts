@@ -28,9 +28,12 @@ function getSqlClient() {
     const { DATABASE_URL } = getEnv();
     globalForDb.__casaCarramSql = postgres(DATABASE_URL, {
       prepare: false, // obrigatório com o pooler de transação (Supavisor).
-      max: 1, // conservador p/ serverless; evita esgotar o pool.
-      idle_timeout: 20, // recicla conexões ociosas (evita conexão "presa"/stale no pooler).
-      connect_timeout: 15, // não pendura indefinidamente ao (re)conectar.
+      // `max > 1` evita head-of-line blocking: enquanto uma conexão "acorda" o compute do
+      // Supabase (free tier hiberna), as outras seguem servindo. Seguro no pooler de transação
+      // (feito para muitas conexões curtas). Baixo tráfego de uma pousada não esgota o pool.
+      max: 5,
+      idle_timeout: 120, // mantém a conexão quente durante o uso; recicla só após 2min ociosa.
+      connect_timeout: 30, // tolera o cold-start do compute do Supabase ao (re)conectar.
     });
   }
   return globalForDb.__casaCarramSql;
