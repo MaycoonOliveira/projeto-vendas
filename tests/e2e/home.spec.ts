@@ -1,7 +1,5 @@
 import { test, expect, type ConsoleMessage } from "@playwright/test";
 
-const AIRBNB_URL = "https://www.airbnb.pt/rooms/1688073569848326515";
-
 /** Ignora ruídos de console vindos de recursos externos (ex.: iframe do Maps). */
 function isRelevantError(msg: ConsoleMessage) {
   if (msg.type() !== "error") return false;
@@ -30,11 +28,11 @@ test("a home não registra erros críticos no console", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("o CTA de reserva aponta para o anúncio oficial", async ({ page }) => {
+test("o CTA de reserva aponta para o fluxo próprio /reservar", async ({ page }) => {
   await page.goto("/");
   const reserve = page.getByRole("link", { name: /reservar agora/i }).first();
-  await expect(reserve).toHaveAttribute("href", AIRBNB_URL);
-  await expect(reserve).toHaveAttribute("target", "_blank");
+  // Fase 7: o CTA passou a apontar para o fluxo de reserva interno (Airbnb comentado no código).
+  await expect(reserve).toHaveAttribute("href", "/reservar");
 });
 
 test("os links de WhatsApp usam o formato wa.me", async ({ page }) => {
