@@ -56,29 +56,37 @@ export function proxy(request: NextRequest): NextResponse {
       );
     }
 
-    // CSP estrita baseada em nonce (admin é dinâmico).
-    const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-    const csp = [
-      "default-src 'self'",
-      `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
-      `style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`}`,
-      "img-src 'self' blob: data:",
-      "font-src 'self'",
-      // dev: permite o WebSocket de HMR do Next (ws/wss) e fetch para o próprio host.
-      `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'none'",
-      "upgrade-insecure-requests",
-    ].join("; ");
+    // CSP estrita baseada em nonce — SÓ em produção. Em dev, a CSP (nonce/strict-dynamic e,
+    // sobretudo, `upgrade-insecure-requests`) quebra o carregamento dos scripts do Next em
+    // http://localhost e o tooling/HMR — então em dev mantemos apenas os demais headers.
+    if (!isDev) {
+      const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+      const csp = [
+        "default-src 'self'",
+        `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+        `style-src 'self' 'nonce-${nonce}'`,
+        "img-src 'self' blob: data:",
+        "font-src 'self'",
+        "connect-src 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+        "upgrade-insecure-requests",
+      ].join("; ");
 
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("x-nonce", nonce);
-    requestHeaders.set("Content-Security-Policy", csp);
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set("x-nonce", nonce);
+      requestHeaders.set("Content-Security-Policy", csp);
 
-    const res = NextResponse.next({ request: { headers: requestHeaders } });
-    res.headers.set("Content-Security-Policy", csp);
+      const res = NextResponse.next({ request: { headers: requestHeaders } });
+      res.headers.set("Content-Security-Policy", csp);
+      res.headers.set("X-Frame-Options", "DENY");
+      return withSecurityHeaders(res);
+    }
+
+    // dev: sem CSP (tooling livre), mantém anti-clickjacking.
+    const res = NextResponse.next();
     res.headers.set("X-Frame-Options", "DENY");
     return withSecurityHeaders(res);
   }
