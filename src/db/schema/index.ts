@@ -6,8 +6,10 @@
  *
  * Fase 2: tabelas do Better Auth (`user`, `session`, `account`, `verification`).
  * Fase 3: domínio (`accommodation`, `rate_override`, `audit_log`).
- * Fase 4+: `guest`, `reservation`, `occupancy`, ...
+ * Fase 4: `occupancy` (ledger anti-overbooking).
+ * Fase 5+: `guest`, `reservation`, `block`, ...
  */
 export * from "./auth";
 export * from "./accommodation";
 export * from "./audit";
+export * from "./occupancy";

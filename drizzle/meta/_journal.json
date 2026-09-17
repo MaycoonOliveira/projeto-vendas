@@ -22,6 +22,13 @@
       "when": 1789634117862,
       "tag": "0002_accommodation_pricing_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789637651825,
+      "tag": "0003_skinny_blacklash",
+      "breakpoints": true
     }
   ]
 }

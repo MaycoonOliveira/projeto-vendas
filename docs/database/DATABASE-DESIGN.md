@@ -184,6 +184,14 @@ Acesso **só via painel autenticado**; **nunca** exposto via `public_code`. Índ
 | timestamps | | |
 
 ### 3.9 `occupancy` — **ledger de ocupação (garantia anti-overbooking)**
+> **Status (Fase 4 — implementado):** migration `0003_skinny_blacklash.sql`. Guardamos
+> `check_in`/`check_out` como colunas `date` e `during` é uma coluna **GERADA**
+> `daterange(check_in, check_out, '[)')` (Drizzle não modela coluna gerada de daterange nem EXCLUDE
+> parcial → apêndice SQL na migration, como em `rate_override`). A EXCLUDE é **parcial** (`WHERE active`).
+> As colunas `reservation_id`/`block_id` existem sem FK: as FKs entram nas Fases 5 (`reservation`) e
+> 6 (`block`), quando as tabelas-alvo passam a existir. `AvailabilityService` (`src/lib/services/availability.ts`)
+> faz a leitura; `expire-on-read` de holds PENDING entra na Fase 5.
+
 | Campo | Tipo | Notas |
 |---|---|---|
 | `id` | uuid PK | |
