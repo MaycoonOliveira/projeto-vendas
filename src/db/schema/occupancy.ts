@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { accommodation } from "./accommodation";
+import { block } from "./block";
 import { reservation } from "./reservation";
 
 /**
@@ -40,8 +41,7 @@ export const occupancy = pgTable(
     reservationId: uuid("reservation_id").references(() => reservation.id, {
       onDelete: "cascade",
     }),
-    // FK de `block_id` entra na Fase 6 (tabela `block` ainda não existe).
-    blockId: uuid("block_id"),
+    blockId: uuid("block_id").references(() => block.id, { onDelete: "cascade" }),
     active: boolean("active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

@@ -8,11 +8,13 @@
  * Fase 3: domínio (`accommodation`, `rate_override`, `audit_log`).
  * Fase 4: `occupancy` (ledger anti-overbooking).
  * Fase 5: `guest`, `reservation`, `reservation_status_history`.
- * Fase 6+: `block`, ...
+ * Fase 6: `block`, `setting`.
  */
 export * from "./auth";
 export * from "./accommodation";
 export * from "./audit";
 export * from "./guest";
 export * from "./reservation";
+export * from "./block";
+export * from "./setting";
 export * from "./occupancy";

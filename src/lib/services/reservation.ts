@@ -23,7 +23,9 @@ export type ReservationConflictReason =
   | "UNAVAILABLE" // datas ficaram indisponíveis (exclusion constraint / revalidação)
   | "CAPACITY" // hóspedes acima da capacidade
   | "MIN_NIGHTS" // abaixo da estadia mínima
-  | "NOT_FOUND"; // acomodação inexistente/inativa
+  | "NOT_FOUND" // acomodação/reserva inexistente/inativa
+  | "VERSION" // edição concorrente (optimistic locking) — "recarregue"
+  | "INVALID_TRANSITION"; // transição de status não permitida
 
 export class ReservationConflictError extends Error {
   constructor(
@@ -36,7 +38,7 @@ export class ReservationConflictError extends Error {
 }
 
 /** Percorre a cadeia `.cause` (o Drizzle envolve o erro do driver) até achar o SQLSTATE. */
-function pgError(error: unknown): { code?: string; constraint?: string } {
+export function pgError(error: unknown): { code?: string; constraint?: string } {
   let current: unknown = error;
   for (let depth = 0; depth < 6 && current != null; depth += 1) {
     if (typeof current === "object" && current !== null && "code" in current) {

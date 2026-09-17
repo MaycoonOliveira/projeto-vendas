@@ -19,19 +19,24 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             >
               Casa Carram · Admin
             </Link>
-            <nav className="hidden items-center gap-4 text-sm sm:flex">
-              <Link
-                href="/admin"
-                className="text-foreground/70 transition-colors hover:text-foreground"
-              >
-                Painel
-              </Link>
-              <Link
-                href="/admin/acomodacoes"
-                className="text-foreground/70 transition-colors hover:text-foreground"
-              >
-                Acomodações
-              </Link>
+            <nav className="hidden flex-wrap items-center gap-x-4 gap-y-1 text-sm lg:flex">
+              {[
+                ["/admin", "Painel"],
+                ["/admin/reservas", "Reservas"],
+                ["/admin/calendario", "Calendário"],
+                ["/admin/acomodacoes", "Acomodações"],
+                ["/admin/bloqueios", "Bloqueios"],
+                ["/admin/hospedes", "Hóspedes"],
+                ["/admin/configuracoes", "Config."],
+              ].map(([href, label]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="text-foreground/70 transition-colors hover:text-foreground"
+                >
+                  {label}
+                </Link>
+              ))}
             </nav>
           </div>
           <form action={signOutAction}>
