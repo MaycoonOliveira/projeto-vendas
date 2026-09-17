@@ -14,3 +14,11 @@ export function formatCurrency(value: number, currency = "BRL") {
     maximumFractionDigits: 0,
   }).format(value);
 }
+
+/** Formata um valor em centavos como moeda brasileira (com centavos). */
+export function formatCentsBRL(cents: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(cents / 100);
+}

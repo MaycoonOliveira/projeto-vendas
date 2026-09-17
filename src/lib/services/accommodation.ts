@@ -19,8 +19,15 @@ export class ConflictError extends Error {
 }
 
 function pgErrorCode(error: unknown): string | undefined {
-  if (typeof error === "object" && error !== null && "code" in error) {
-    return String((error as { code: unknown }).code);
+  // O Drizzle envolve o erro do driver (DrizzleQueryError) com o erro real em `.cause`.
+  // Percorre a cadeia de causas até achar o SQLSTATE (`code`).
+  let current: unknown = error;
+  for (let depth = 0; depth < 5 && current != null; depth += 1) {
+    if (typeof current === "object" && "code" in current) {
+      const code = (current as { code?: unknown }).code;
+      if (typeof code === "string" && code) return code;
+    }
+    current = (current as { cause?: unknown }).cause;
   }
   return undefined;
 }
