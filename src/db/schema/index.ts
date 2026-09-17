@@ -5,6 +5,9 @@
  * do schema no Postgres (Supabase). Ver `docs/database/DATABASE-DESIGN.md`.
  *
  * Fase 2: tabelas do Better Auth (`user`, `session`, `account`, `verification`).
- * Fase 3+: domínio (`accommodation`, `rate_override`, `guest`, `reservation`, `occupancy`, ...).
+ * Fase 3: domínio (`accommodation`, `rate_override`, `audit_log`).
+ * Fase 4+: `guest`, `reservation`, `occupancy`, ...
  */
 export * from "./auth";
+export * from "./accommodation";
+export * from "./audit";

@@ -15,6 +15,13 @@
       "when": 1789596471603,
       "tag": "0001_better_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789634117862,
+      "tag": "0002_accommodation_pricing_audit",
+      "breakpoints": true
     }
   ]
 }
