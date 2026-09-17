@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, ilike, lte, or, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -295,34 +295,53 @@ export type ReservationListItem = {
   accommodationName: string;
 };
 
+export type ReservationListResult = {
+  items: ReservationListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
 export async function listReservations(filters?: {
   status?: ReservationStatus;
-}): Promise<ReservationListItem[]> {
-  const where = filters?.status
-    ? eq(reservation.status, filters.status)
-    : undefined;
-  const rows = await db
-    .select({
-      id: reservation.id,
-      publicCode: reservation.publicCode,
-      status: reservation.status,
-      checkIn: reservation.checkIn,
-      checkOut: reservation.checkOut,
-      nights: reservation.nights,
-      guestsCount: reservation.guestsCount,
-      totalPriceCents: reservation.totalPriceCents,
-      source: reservation.source,
-      holdExpiresAt: reservation.holdExpiresAt,
-      guestName: guest.fullName,
-      accommodationName: accommodation.name,
-    })
-    .from(reservation)
-    .innerJoin(guest, eq(guest.id, reservation.guestId))
-    .innerJoin(accommodation, eq(accommodation.id, reservation.accommodationId))
-    .where(where)
-    .orderBy(desc(reservation.createdAt))
-    .limit(200);
-  return rows;
+  q?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<ReservationListResult> {
+  const page = Math.max(1, filters?.page ?? 1);
+  const pageSize = Math.min(100, Math.max(5, filters?.pageSize ?? 25));
+
+  const conds = [];
+  if (filters?.status) conds.push(eq(reservation.status, filters.status));
+  const q = filters?.q?.trim();
+  if (q) {
+    conds.push(
+      or(
+        ilike(guest.fullName, `%${q}%`),
+        ilike(reservation.publicCode, `%${q}%`),
+      ),
+    );
+  }
+  const where = conds.length ? and(...conds) : undefined;
+
+  const [items, countRows] = await Promise.all([
+    db
+      .select(reservationListSelect())
+      .from(reservation)
+      .innerJoin(guest, eq(guest.id, reservation.guestId))
+      .innerJoin(accommodation, eq(accommodation.id, reservation.accommodationId))
+      .where(where)
+      .orderBy(desc(reservation.createdAt))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize),
+    db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(reservation)
+      .innerJoin(guest, eq(guest.id, reservation.guestId))
+      .where(where),
+  ]);
+
+  return { items, total: countRows[0]?.n ?? 0, page, pageSize };
 }
 
 export async function getReservationAdmin(id: string) {

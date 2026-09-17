@@ -31,12 +31,30 @@ const VALID = new Set([
 export default async function ReservasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; page?: string }>;
 }) {
   await requireAdmin();
-  const { status } = await searchParams;
+  const { status, q, page } = await searchParams;
   const filter = status && VALID.has(status) ? (status as ReservationStatus) : undefined;
-  const reservations = await listReservations(filter ? { status: filter } : undefined);
+  const pageNum = Math.max(1, Number(page) || 1);
+  const { items: reservations, total, pageSize } = await listReservations({
+    status: filter,
+    q: q?.trim() || undefined,
+    page: pageNum,
+  });
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const qsWith = (over: Record<string, string | number | undefined>) => {
+    const sp = new URLSearchParams();
+    if (status) sp.set("status", status);
+    if (q) sp.set("q", q);
+    for (const [k, v] of Object.entries(over)) {
+      if (v === undefined || v === "") sp.delete(k);
+      else sp.set(k, String(v));
+    }
+    const s = sp.toString();
+    return s ? `/admin/reservas?${s}` : "/admin/reservas";
+  };
 
   return (
     <AdminShell>
@@ -50,13 +68,37 @@ export default async function ReservasPage({
         </Link>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      {/* Busca */}
+      <form action="/admin/reservas" method="get" className="mt-5 flex gap-2">
+        {status ? <input type="hidden" name="status" value={status} /> : null}
+        <input
+          type="search"
+          name="q"
+          defaultValue={q ?? ""}
+          placeholder="Buscar por hóspede ou código…"
+          className="h-10 w-full max-w-sm rounded-lg border border-border bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
+        />
+        <button type="submit" className="rounded-lg border border-border px-4 text-sm font-medium text-foreground/80 hover:bg-foreground/5">
+          Buscar
+        </button>
+        {q ? (
+          <Link href={qsWith({ q: undefined, page: undefined })} className="flex items-center px-2 text-sm text-foreground/50 hover:text-foreground">
+            Limpar
+          </Link>
+        ) : null}
+      </form>
+
+      <div className="mt-4 flex flex-wrap gap-2">
         {FILTERS.map((f) => {
           const active = (status ?? "") === f.value;
+          const sp = new URLSearchParams();
+          if (f.value) sp.set("status", f.value);
+          if (q) sp.set("q", q);
+          const href = sp.toString() ? `/admin/reservas?${sp}` : "/admin/reservas";
           return (
             <Link
               key={f.value || "all"}
-              href={f.value ? `/admin/reservas?status=${f.value}` : "/admin/reservas"}
+              href={href}
               className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
                 active
                   ? "bg-foreground text-white"
@@ -124,6 +166,26 @@ export default async function ReservasPage({
           </table>
         </div>
       )}
+
+      {total > pageSize ? (
+        <div className="mt-4 flex items-center justify-between text-sm">
+          <span className="text-foreground/50">
+            {total} reserva(s) · página {pageNum} de {totalPages}
+          </span>
+          <div className="flex gap-2">
+            {pageNum > 1 ? (
+              <Link href={qsWith({ page: pageNum - 1 })} className="rounded-lg border border-border px-3 py-1.5 hover:bg-foreground/5">
+                ← Anterior
+              </Link>
+            ) : null}
+            {pageNum < totalPages ? (
+              <Link href={qsWith({ page: pageNum + 1 })} className="rounded-lg border border-border px-3 py-1.5 hover:bg-foreground/5">
+                Próxima →
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </AdminShell>
   );
 }
