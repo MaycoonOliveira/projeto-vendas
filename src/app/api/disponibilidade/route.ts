@@ -42,11 +42,21 @@ export async function GET(request: NextRequest) {
   }
 
   const { checkin, checkout, guests } = parsed.data;
-  const available = await findAvailableAccommodations({
-    checkIn: checkin,
-    checkOut: checkout,
-    guests,
-  });
+  let available;
+  try {
+    available = await findAvailableAccommodations({
+      checkIn: checkin,
+      checkOut: checkout,
+      guests,
+    });
+  } catch (error) {
+    // Erro genérico ao cliente (sem vazar stack/SQL); log detalhado no servidor.
+    console.error("[disponibilidade] falha na consulta:", error);
+    return NextResponse.json(
+      { error: "Não foi possível consultar a disponibilidade. Tente novamente." },
+      { status: 503 },
+    );
+  }
 
   return NextResponse.json({
     query: { checkin, checkout, guests },
