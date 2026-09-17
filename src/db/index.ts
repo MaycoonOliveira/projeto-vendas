@@ -27,8 +27,10 @@ function getSqlClient() {
   if (!globalForDb.__casaCarramSql) {
     const { DATABASE_URL } = getEnv();
     globalForDb.__casaCarramSql = postgres(DATABASE_URL, {
-      prepare: false,
-      max: 1,
+      prepare: false, // obrigatório com o pooler de transação (Supavisor).
+      max: 1, // conservador p/ serverless; evita esgotar o pool.
+      idle_timeout: 20, // recicla conexões ociosas (evita conexão "presa"/stale no pooler).
+      connect_timeout: 15, // não pendura indefinidamente ao (re)conectar.
     });
   }
   return globalForDb.__casaCarramSql;
