@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CalendarCheck, MessageCircle, Phone } from "lucide-react";
 import { buttonVariants, type ButtonProps } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,7 @@ type CtaProps = {
   source?: string;
 };
 
-/** Botão principal de reserva (leva ao anúncio oficial no Airbnb). */
+/** Botão principal de reserva (leva ao fluxo de reserva próprio `/reservar`). */
 export function ReserveButton({
   variant = "primary",
   size = "md",
@@ -27,17 +28,30 @@ export function ReserveButton({
   source,
 }: CtaProps) {
   return (
-    <a
-      href={siteConfig.booking.airbnbUrl}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href="/reservar"
       onClick={() => track("click_reservation", { source: source ?? "generic" })}
       className={cn(buttonVariants({ variant, size }), className)}
     >
       {withIcon ? <CalendarCheck aria-hidden /> : null}
       {children}
-    </a>
+    </Link>
   );
+
+  // ── Funil externo (Airbnb) — mantido comentado por decisão de negócio ──────────────
+  // Para reverter ao anúncio do Airbnb, reative este retorno e comente o <Link> acima.
+  // return (
+  //   <a
+  //     href={siteConfig.booking.airbnbUrl}
+  //     target="_blank"
+  //     rel="noopener noreferrer"
+  //     onClick={() => track("click_reservation", { source: source ?? "generic" })}
+  //     className={cn(buttonVariants({ variant, size }), className)}
+  //   >
+  //     {withIcon ? <CalendarCheck aria-hidden /> : null}
+  //     {children}
+  //   </a>
+  // );
 }
 
 /** Botão de WhatsApp com mensagem pré-preenchida. */
