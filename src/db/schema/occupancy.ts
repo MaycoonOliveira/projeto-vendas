@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { accommodation } from "./accommodation";
+import { reservation } from "./reservation";
 
 /**
  * `occupancy` — ledger de ocupação (Fase 4). É a **garantia anti-overbooking** do sistema:
@@ -36,8 +37,10 @@ export const occupancy = pgTable(
     checkIn: date("check_in", { mode: "string" }).notNull(),
     checkOut: date("check_out", { mode: "string" }).notNull(),
     sourceType: text("source_type").notNull(),
-    // FKs adicionadas nas Fases 5/6 (tabelas-alvo ainda não existem).
-    reservationId: uuid("reservation_id"),
+    reservationId: uuid("reservation_id").references(() => reservation.id, {
+      onDelete: "cascade",
+    }),
+    // FK de `block_id` entra na Fase 6 (tabela `block` ainda não existe).
     blockId: uuid("block_id"),
     active: boolean("active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true })

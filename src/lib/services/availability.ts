@@ -1,7 +1,7 @@
 import { and, asc, eq, gte, inArray, isNull, lte, sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { accommodation, occupancy, rateOverride } from "@/db/schema";
+import { accommodation, occupancy, rateOverride, reservation } from "@/db/schema";
 import { nightsBetween } from "@/lib/dates";
 import { calculatePrice, type PriceResult } from "@/lib/pricing";
 import type { Accommodation } from "@/lib/services/accommodation";
@@ -13,12 +13,13 @@ import type { Accommodation } from "@/lib/services/accommodation";
  * `occupancy` ativa dela cujo `during` sobreponha (`&&`) o período. Intervalo semiaberto:
  * datas adjacentes (`[10,12)` + `[12,14)`) não conflitam.
  *
- * `expire-on-read` (ignorar holds PENDING vencidos): entra na Fase 5, quando existir a tabela
- * `reservation` com `hold_expires_at`. Por ora `occupancy.active` é a fonte de verdade.
+ * **expire-on-read**: uma ocupação de hold PENDING **vencido** (`hold_expires_at < now()`) é
+ * ignorada — coincide com o que o expire-on-write liberaria na escrita. Blocos e reservas
+ * CONFIRMED continuam bloqueando.
  */
 
 /**
- * Fragmento SQL: existe ocupação ATIVA da acomodação sobrepondo `[checkIn, checkOut)`?
+ * Fragmento SQL: existe ocupação ATIVA e VÁLIDA da acomodação sobrepondo `[checkIn, checkOut)`?
  * `accId` pode ser um valor (string → parâmetro) ou uma coluna Drizzle (identificador),
  * ambos aceitos pelo template `sql`.
  */
@@ -26,9 +27,15 @@ function overlapsExisting(accId: unknown, checkIn: string, checkOut: string) {
   // `during` é uma coluna GERADA existente só na migration (Drizzle não a modela) → raw.
   return sql`EXISTS (
     SELECT 1 FROM ${occupancy}
+    LEFT JOIN ${reservation} ON ${reservation.id} = ${occupancy.reservationId}
     WHERE ${occupancy.accommodationId} = ${accId}
       AND ${occupancy.active}
       AND ${sql.raw('"occupancy"."during"')} && daterange(${checkIn}::date, ${checkOut}::date, '[)')
+      AND NOT (
+        ${occupancy.sourceType} = 'RESERVATION'
+        AND ${reservation.status} = 'PENDING'
+        AND ${reservation.holdExpiresAt} < now()
+      )
   )`;
 }
 

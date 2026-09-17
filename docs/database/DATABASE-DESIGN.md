@@ -134,6 +134,15 @@ Acesso **só via painel autenticado**; **nunca** exposto via `public_code`. Índ
 Índice: `(reservation_id)`.
 
 ### 3.6 `reservation` — a reserva
+> **Status (Fase 5 — implementado):** migration `0004_spooky_solo.sql` (`guest`, `reservation`,
+> `reservation_status_history` + FK `occupancy.reservation_id`). `ReservationService.createReservation`
+> é transacional: `SELECT … FOR UPDATE` na acomodação → expire-on-write → recálculo de preço no
+> servidor → INSERT guest/reservation/occupancy (a EXCLUDE de `occupancy` é a barreira final → 409)
+> → histórico + auditoria. Idempotência via `idempotency_key` (único). `public_code` = 26 chars
+> base32 (~128 bits). Availability faz **expire-on-read**. Provado por script de integração:
+> **2 conexões paralelas → 1×sucesso + 1×23P01**, idempotência, expire-on-write/read, capacidade,
+> estadia mínima. `version`/optimistic locking preparado para a edição admin (Fase 6).
+
 | Campo | Tipo | Notas |
 |---|---|---|
 | `id` | uuid PK | |

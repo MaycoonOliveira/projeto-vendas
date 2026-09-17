@@ -29,6 +29,13 @@
       "when": 1789637651825,
       "tag": "0003_skinny_blacklash",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789652501106,
+      "tag": "0004_spooky_solo",
+      "breakpoints": true
     }
   ]
 }
