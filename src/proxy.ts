@@ -35,6 +35,31 @@ const PUBLIC_ADMIN_ROUTES = new Set([
   "/admin/redefinir-senha",
 ]);
 
+/**
+ * CSP do site público (marketing), aplicada SÓ em produção — em dev o HMR do Next usa `eval`
+ * e scripts inline que uma CSP estrita quebraria. Sem nonce (o header é adicionado na borda,
+ * sem ler `headers()`), então as páginas continuam ESTÁTICAS.
+ *
+ * `script-src`/`style-src` incluem `'unsafe-inline'`: o App Router injeta scripts/estilos inline
+ * de bootstrap/hydration e não há entrada de HTML do usuário nessas páginas (React já escapa) —
+ * o ganho aqui é de defesa em profundidade (object-src, base-uri, form-action, frame-ancestors,
+ * connect-src travados). `frame-src` libera só o embed do Google Maps.
+ */
+const MARKETING_CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "frame-src https://www.google.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+  "upgrade-insecure-requests",
+].join("; ");
+
 export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -90,9 +115,12 @@ export function proxy(request: NextRequest): NextResponse {
     return withSecurityHeaders(res);
   }
 
-  // Marketing (estático): só headers de segurança; sem CSP por ora.
+  // Marketing (estático): headers de segurança + CSP em produção (dev fica sem CSP p/ HMR).
   const res = NextResponse.next();
   res.headers.set("X-Frame-Options", "SAMEORIGIN");
+  if (isProd) {
+    res.headers.set("Content-Security-Policy", MARKETING_CSP);
+  }
   return withSecurityHeaders(res);
 }
 
