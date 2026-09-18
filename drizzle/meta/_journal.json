@@ -43,6 +43,13 @@
       "when": 1789654092790,
       "tag": "0005_striped_sue_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789689912519,
+      "tag": "0006_tough_saracen",
+      "breakpoints": true
     }
   ]
 }

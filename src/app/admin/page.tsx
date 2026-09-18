@@ -3,6 +3,10 @@ import { AlertCircle, CalendarClock, LogIn, LogOut, Users } from "lucide-react";
 
 import { AdminShell } from "@/components/admin/admin-shell";
 import { MonthCalendar } from "@/components/admin/month-calendar";
+import {
+  checkInReservationAction,
+  checkOutReservationAction,
+} from "@/app/admin/reservas/actions";
 import { requireAdmin } from "@/lib/dal";
 import { todayInSaoPaulo } from "@/lib/dates";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
@@ -166,8 +170,8 @@ export default async function AdminDashboardPage({
 
       {/* Chegadas e saídas de hoje */}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <TodayList title="Chegadas de hoje" items={snap.arrivalsToday} empty="Nenhuma chegada hoje." />
-        <TodayList title="Saídas de hoje" items={snap.departuresToday} empty="Nenhuma saída hoje." />
+        <TodayList title="Chegadas de hoje" items={snap.arrivalsToday} empty="Nenhuma chegada hoje." quick="checkin" />
+        <TodayList title="Saídas de hoje" items={snap.departuresToday} empty="Nenhuma saída hoje." quick="checkout" />
       </div>
     </AdminShell>
   );
@@ -177,10 +181,12 @@ function TodayList({
   title,
   items,
   empty,
+  quick,
 }: {
   title: string;
   items: ReservationListItem[];
   empty: string;
+  quick?: "checkin" | "checkout";
 }) {
   return (
     <section className="rounded-xl border border-border bg-white p-5">
@@ -192,6 +198,8 @@ function TodayList({
           {items.map((r) => {
             const eff = effectiveStatus(r.status, r.holdExpiresAt);
             const badge = RESERVATION_STATUS_LABEL[eff] ?? RESERVATION_STATUS_LABEL.PENDING;
+            const showCheckin = quick === "checkin" && eff === "CONFIRMED";
+            const showCheckout = quick === "checkout" && eff === "CHECKED_IN";
             return (
               <li key={r.id} className="flex items-center justify-between gap-3 py-2.5">
                 <Link href={`/admin/reservas/${r.id}`} className="min-w-0">
@@ -200,9 +208,27 @@ function TodayList({
                     {r.accommodationName} · {r.guestsCount} hóspede(s) · {formatCentsBRL(r.totalPriceCents)}
                   </span>
                 </Link>
-                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${badge.className}`}>
-                  {badge.label}
-                </span>
+                <div className="flex shrink-0 items-center gap-2">
+                  {showCheckin ? (
+                    <form action={checkInReservationAction}>
+                      <input type="hidden" name="id" value={r.id} />
+                      <button className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700">
+                        Check-in
+                      </button>
+                    </form>
+                  ) : showCheckout ? (
+                    <form action={checkOutReservationAction}>
+                      <input type="hidden" name="id" value={r.id} />
+                      <button className="rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700">
+                        Check-out
+                      </button>
+                    </form>
+                  ) : (
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.className}`}>
+                      {badge.label}
+                    </span>
+                  )}
+                </div>
               </li>
             );
           })}

@@ -18,16 +18,22 @@ import {
   ReservationConflictError,
   type Reservation,
 } from "@/lib/services/reservation";
+import { listPayments, totalPaidCents } from "@/lib/services/payment";
 
 /**
  * Operações administrativas de reserva (Fase 6): máquina de estados, edição transacional com
  * optimistic locking e consultas para o painel. Autorização é feita na borda (Server Actions/DAL).
  */
 
-/** Transições permitidas (todas as demais são proibidas). Terminais não têm saída. */
+/**
+ * Transições permitidas (todas as demais são proibidas). Terminais não têm saída.
+ * Fase 8 (ADR-0001): CONFIRMED→CHECKED_IN→CHECKED_OUT. `COMPLETED` mantido como terminal legado.
+ */
 const TRANSITIONS: Record<ReservationStatus, ReservationStatus[]> = {
   PENDING: ["CONFIRMED", "CANCELLED", "EXPIRED"],
-  CONFIRMED: ["CANCELLED", "COMPLETED", "NO_SHOW"],
+  CONFIRMED: ["CHECKED_IN", "CANCELLED", "COMPLETED", "NO_SHOW"],
+  CHECKED_IN: ["CHECKED_OUT"],
+  CHECKED_OUT: [],
   CANCELLED: [],
   EXPIRED: [],
   COMPLETED: [],
@@ -120,6 +126,31 @@ export const completeReservation = (id: string, adminId?: string | null) =>
   transitionReservation(id, "COMPLETED", { adminId });
 export const noShowReservation = (id: string, adminId?: string | null) =>
   transitionReservation(id, "NO_SHOW", { adminId });
+export const checkInReservation = (id: string, adminId?: string | null) =>
+  transitionReservation(id, "CHECKED_IN", { adminId });
+export const checkOutReservation = (id: string, adminId?: string | null) =>
+  transitionReservation(id, "CHECKED_OUT", { adminId });
+
+/** Atualiza a nota interna (admin) — distinta da observação do hóspede. Fase 8.2. */
+export async function setInternalNote(
+  id: string,
+  note: string | null,
+  adminId?: string | null,
+): Promise<void> {
+  const [row] = await db
+    .update(reservation)
+    .set({ internalNote: note, updatedAt: new Date() })
+    .where(eq(reservation.id, id))
+    .returning({ id: reservation.id });
+  if (!row) throw new ReservationConflictError("NOT_FOUND", "Reserva não encontrada.");
+  await db.insert(auditLog).values({
+    actorType: "USER",
+    actorId: adminId ?? null,
+    action: "reservation.internal_note",
+    entityType: "reservation",
+    entityId: id,
+  });
+}
 
 export type EditReservationPatch = {
   checkIn?: string;
@@ -362,7 +393,11 @@ export async function getReservationAdmin(id: string) {
     .from(reservationStatusHistory)
     .where(eq(reservationStatusHistory.reservationId, id))
     .orderBy(desc(reservationStatusHistory.createdAt));
-  return { reservation: r, guest: g, accommodation: acc, history };
+  const [payments, paidCents] = await Promise.all([
+    listPayments(id),
+    totalPaidCents(id),
+  ]);
+  return { reservation: r, guest: g, accommodation: acc, history, payments, paidCents };
 }
 
 /** Contagem de reservas por status (para o dashboard). */

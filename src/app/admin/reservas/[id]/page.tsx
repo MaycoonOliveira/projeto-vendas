@@ -4,14 +4,20 @@ import { notFound } from "next/navigation";
 
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/dal";
+import { todayInSaoPaulo } from "@/lib/dates";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
 import { getReservationAdmin } from "@/lib/services/reservation-admin";
+import { PAYMENT_METHOD_LABEL } from "@/lib/services/payment";
 import { formatCentsBRL } from "@/lib/utils";
 import {
   cancelReservationAction,
-  completeReservationAction,
+  checkInReservationAction,
+  checkOutReservationAction,
   confirmReservationAction,
+  deletePaymentAction,
   noShowReservationAction,
+  recordPaymentAction,
+  updateInternalNoteAction,
 } from "../actions";
 import { ReservationEditForm } from "./reservation-edit-form";
 
@@ -28,10 +34,12 @@ export default async function ReservaDetailPage({
   const data = await getReservationAdmin(id);
   if (!data) notFound();
 
-  const { reservation: r, guest, accommodation, history } = data;
+  const { reservation: r, guest, accommodation, history, payments, paidCents } = data;
   const eff = effectiveStatus(r.status, r.holdExpiresAt);
   const badge = RESERVATION_STATUS_LABEL[eff] ?? RESERVATION_STATUS_LABEL.PENDING;
   const editable = eff === "PENDING" || eff === "CONFIRMED";
+  const today = todayInSaoPaulo();
+  const balanceCents = r.totalPriceCents - paidCents;
 
   return (
     <AdminShell>
@@ -94,10 +102,10 @@ export default async function ReservaDetailPage({
           ) : null}
           {eff === "CONFIRMED" ? (
             <>
-              <form action={completeReservationAction}>
+              <form action={checkInReservationAction}>
                 <input type="hidden" name="id" value={r.id} />
-                <button className="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                  Concluir
+                <button className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                  Fazer check-in
                 </button>
               </form>
               <form action={noShowReservationAction}>
@@ -107,6 +115,14 @@ export default async function ReservaDetailPage({
                 </button>
               </form>
             </>
+          ) : null}
+          {eff === "CHECKED_IN" ? (
+            <form action={checkOutReservationAction}>
+              <input type="hidden" name="id" value={r.id} />
+              <button className="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                Fazer check-out
+              </button>
+            </form>
           ) : null}
           {eff === "PENDING" || eff === "CONFIRMED" ? (
             <form action={cancelReservationAction} className="flex items-center gap-2">
@@ -121,12 +137,106 @@ export default async function ReservaDetailPage({
               </button>
             </form>
           ) : null}
-          {!editable ? (
+          {eff !== "PENDING" && eff !== "CONFIRMED" && eff !== "CHECKED_IN" ? (
             <p className="text-sm text-foreground/50">
-              Reserva em estado terminal — sem ações disponíveis.
+              Reserva em estado terminal — sem ações de status disponíveis.
             </p>
           ) : null}
         </div>
+      </section>
+
+      {/* Pagamentos (registro manual — Fase 8.3) */}
+      <section className="mt-6 rounded-xl border border-border bg-white p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold text-foreground">Pagamentos</h2>
+          <div className="flex gap-4 text-sm">
+            <span className="text-foreground/60">
+              Pago: <strong className="text-foreground">{formatCentsBRL(paidCents)}</strong>
+            </span>
+            <span className={balanceCents > 0 ? "text-amber-700" : "text-green-700"}>
+              {balanceCents > 0
+                ? `Saldo: ${formatCentsBRL(balanceCents)}`
+                : "Quitada"}
+            </span>
+          </div>
+        </div>
+
+        {payments.length > 0 ? (
+          <ul className="mt-3 divide-y divide-border">
+            {payments.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <span className="text-foreground/80">
+                  <strong className="text-foreground">{formatCentsBRL(p.amountCents)}</strong>{" "}
+                  · {PAYMENT_METHOD_LABEL[p.method] ?? p.method} · {p.paidOn}
+                  {p.note ? <span className="text-foreground/50"> · {p.note}</span> : null}
+                </span>
+                <form action={deletePaymentAction}>
+                  <input type="hidden" name="id" value={p.id} />
+                  <input type="hidden" name="reservationId" value={r.id} />
+                  <button className="rounded-full px-2 py-1 text-xs text-red-600 hover:bg-red-50" aria-label="Remover pagamento">
+                    Remover
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-foreground/50">Nenhum pagamento registrado.</p>
+        )}
+
+        <form action={recordPaymentAction} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_1fr_1.4fr_auto] sm:items-end">
+          <input type="hidden" name="reservationId" value={r.id} />
+          <div>
+            <label htmlFor="amount" className="mb-1 block text-xs font-medium text-foreground/70">Valor (R$)</label>
+            <input id="amount" name="amount" type="number" step="0.01" min="0.01" required
+              defaultValue={balanceCents > 0 ? (balanceCents / 100).toFixed(2) : ""}
+              className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25" />
+          </div>
+          <div>
+            <label htmlFor="paidOn" className="mb-1 block text-xs font-medium text-foreground/70">Data</label>
+            <input id="paidOn" name="paidOn" type="date" required defaultValue={today}
+              className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25" />
+          </div>
+          <div>
+            <label htmlFor="method" className="mb-1 block text-xs font-medium text-foreground/70">Método</label>
+            <select id="method" name="method" required
+              className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25">
+              {Object.entries(PAYMENT_METHOD_LABEL).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="note" className="mb-1 block text-xs font-medium text-foreground/70">Observação (opcional)</label>
+            <input id="note" name="note" className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25" />
+          </div>
+          <button className="h-10 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
+            Registrar
+          </button>
+        </form>
+      </section>
+
+      {/* Nota interna (admin) — distinta da observação do hóspede */}
+      <section className="mt-6 rounded-xl border border-border bg-white p-5">
+        <h2 className="text-sm font-semibold text-foreground">Nota interna</h2>
+        <p className="mt-1 text-xs text-foreground/50">
+          Visível apenas para a equipe. Não é compartilhada com o hóspede.
+        </p>
+        <form action={updateInternalNoteAction} className="mt-3 flex flex-col gap-3">
+          <input type="hidden" name="id" value={r.id} />
+          <textarea
+            name="internalNote"
+            rows={3}
+            defaultValue={r.internalNote ?? ""}
+            placeholder="Ex.: hóspede chega após as 22h; combinado desconto por indicação…"
+            className="w-full rounded-lg border border-foreground/15 bg-white px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
+          />
+          <div>
+            <button className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground/80 hover:bg-foreground/5">
+              Salvar nota
+            </button>
+          </div>
+        </form>
       </section>
 
       {/* Edição (datas/hóspedes) */}

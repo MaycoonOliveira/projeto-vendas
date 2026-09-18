@@ -27,6 +27,12 @@ const FLASH_MESSAGES: Record<string, { text: string; tone: ToastTone }> = {
   blocked: { text: "Bloqueio criado.", tone: "success" },
   unblocked: { text: "Bloqueio removido.", tone: "success" },
   settings_saved: { text: "Configurações salvas.", tone: "success" },
+  checked_in: { text: "Check-in registrado.", tone: "success" },
+  checked_out: { text: "Check-out registrado.", tone: "success" },
+  note_saved: { text: "Nota interna salva.", tone: "success" },
+  payment_recorded: { text: "Pagamento registrado.", tone: "success" },
+  payment_deleted: { text: "Pagamento removido.", tone: "success" },
+  payment_invalid: { text: "Não foi possível registrar o pagamento.", tone: "error" },
 };
 
 const TONE_STYLE: Record<ToastTone, { className: string; Icon: typeof CheckCircle2 }> = {

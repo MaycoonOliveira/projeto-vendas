@@ -5,6 +5,8 @@ export const RESERVATION_STATUS_LABEL: Record<
 > = {
   PENDING: { label: "Pendente", className: "bg-amber-50 text-amber-700" },
   CONFIRMED: { label: "Confirmada", className: "bg-green-50 text-green-700" },
+  CHECKED_IN: { label: "Hospedado", className: "bg-emerald-100 text-emerald-800" },
+  CHECKED_OUT: { label: "Check-out", className: "bg-blue-50 text-blue-700" },
   CANCELLED: { label: "Cancelada", className: "bg-red-50 text-red-700" },
   EXPIRED: { label: "Expirada", className: "bg-neutral-100 text-neutral-600" },
   COMPLETED: { label: "Concluída", className: "bg-blue-50 text-blue-700" },

@@ -9,6 +9,7 @@
  * Fase 4: `occupancy` (ledger anti-overbooking).
  * Fase 5: `guest`, `reservation`, `reservation_status_history`.
  * Fase 6: `block`, `setting`.
+ * Fase 8: `payment` (registro manual) + estados CHECKED_IN/CHECKED_OUT + `reservation.internal_note`.
  */
 export * from "./auth";
 export * from "./accommodation";
@@ -18,3 +19,4 @@ export * from "./reservation";
 export * from "./block";
 export * from "./setting";
 export * from "./occupancy";
+export * from "./payment";

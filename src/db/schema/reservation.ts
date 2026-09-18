@@ -16,10 +16,16 @@ import { accommodation } from "./accommodation";
 import { guest } from "./guest";
 import { user } from "./auth";
 
-/** Estados possíveis da reserva (máquina de estados no serviço). */
+/**
+ * Estados possíveis da reserva (máquina de estados no serviço).
+ * `CHECKED_IN`/`CHECKED_OUT` adicionados na Fase 8 (ADR-0001). `COMPLETED` mantido como
+ * terminal legado (retrocompatível); novos check-outs usam `CHECKED_OUT`.
+ */
 export const RESERVATION_STATUSES = [
   "PENDING",
   "CONFIRMED",
+  "CHECKED_IN",
+  "CHECKED_OUT",
   "CANCELLED",
   "EXPIRED",
   "COMPLETED",
@@ -60,6 +66,8 @@ export const reservation = pgTable(
     source: text("source").notNull().default("WEBSITE"),
     holdExpiresAt: timestamp("hold_expires_at", { withTimezone: true }),
     notes: text("notes"),
+    /** Nota interna do admin (distinta de `notes`, que é a observação do hóspede). Fase 8.2. */
+    internalNote: text("internal_note"),
     createdByAdminId: text("created_by_admin_id").references(() => user.id, {
       onDelete: "set null",
     }),
@@ -88,7 +96,7 @@ export const reservation = pgTable(
     check("reservation_total_nonneg", sql`${t.totalPriceCents} >= 0`),
     check(
       "reservation_status_valid",
-      sql`${t.status} in ('PENDING','CONFIRMED','CANCELLED','EXPIRED','COMPLETED','NO_SHOW')`,
+      sql`${t.status} in ('PENDING','CONFIRMED','CHECKED_IN','CHECKED_OUT','CANCELLED','EXPIRED','COMPLETED','NO_SHOW')`,
     ),
     check("reservation_source_valid", sql`${t.source} in ('WEBSITE','MANUAL')`),
   ],
