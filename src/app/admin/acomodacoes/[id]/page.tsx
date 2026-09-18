@@ -79,42 +79,57 @@ export default async function EditAccommodationPage({
       <section className="mt-12">
         <h2 className="font-serif text-xl font-semibold text-foreground">Fotos</h2>
         <p className="mt-1 text-sm text-foreground/60">
-          Aparecem no site público, na busca de disponibilidade. Informe o endereço (URL) da
-          imagem — ex.: link de um serviço de hospedagem de imagens.
+          Aparecem no site público, na busca de disponibilidade. Envie um arquivo (JPG, PNG, WEBP
+          ou AVIF, até 6MB) ou, alternativamente, informe a URL de uma imagem.
         </p>
 
         <form
           action={addPhotoAction}
-          className="mt-4 grid gap-3 rounded-xl border border-border bg-white p-4 sm:grid-cols-[1.6fr_1fr_auto] sm:items-end"
+          className="mt-4 grid gap-3 rounded-xl border border-border bg-white p-4"
         >
           <input type="hidden" name="accommodationId" value={accommodation.id} />
-          <div>
-            <label htmlFor="url" className="mb-1 block text-xs font-medium text-foreground/70">
-              URL da imagem
-            </label>
-            <input
-              id="url"
-              name="url"
-              type="url"
-              required
-              placeholder="https://…/foto.jpg"
-              className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
-            />
+          <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr] sm:items-end">
+            <div>
+              <label htmlFor="file" className="mb-1 block text-xs font-medium text-foreground/70">
+                Arquivo de imagem
+              </label>
+              <input
+                id="file"
+                name="file"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+                className="block w-full text-sm text-foreground/70 file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary-hover"
+              />
+            </div>
+            <div>
+              <label htmlFor="alt" className="mb-1 block text-xs font-medium text-foreground/70">
+                Descrição (alt)
+              </label>
+              <input
+                id="alt"
+                name="alt"
+                placeholder="Suíte com vista"
+                className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="alt" className="mb-1 block text-xs font-medium text-foreground/70">
-              Descrição (alt)
-            </label>
-            <input
-              id="alt"
-              name="alt"
-              placeholder="Suíte com vista"
-              className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
-            />
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div>
+              <label htmlFor="url" className="mb-1 block text-xs font-medium text-foreground/70">
+                …ou URL da imagem (opcional)
+              </label>
+              <input
+                id="url"
+                name="url"
+                type="url"
+                placeholder="https://…/foto.jpg"
+                className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
+              />
+            </div>
+            <button className="h-10 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
+              Adicionar
+            </button>
           </div>
-          <button className="h-10 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
-            Adicionar
-          </button>
         </form>
 
         {photos.length > 0 ? (
@@ -130,6 +145,7 @@ export default async function EditAccommodationPage({
                 />
                 <form action={deletePhotoAction} className="absolute right-2 top-2">
                   <input type="hidden" name="id" value={p.id} />
+                  <input type="hidden" name="url" value={p.url} />
                   <input type="hidden" name="accommodationId" value={accommodation.id} />
                   <button
                     className="rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-red-600 shadow-sm hover:bg-white"

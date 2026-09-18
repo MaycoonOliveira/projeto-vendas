@@ -15,6 +15,7 @@ import {
   updateAccommodation,
 } from "@/lib/services/accommodation";
 import { addPhoto, deletePhoto } from "@/lib/services/accommodation-photo";
+import { deleteImageByUrl, uploadImage } from "@/lib/storage";
 import {
   AccommodationFormSchema,
   OverrideFormSchema,
@@ -239,13 +240,26 @@ export async function deleteOverrideAction(formData: FormData): Promise<void> {
   if (accommodationId) revalidatePath(`/admin/acomodacoes/${accommodationId}`);
 }
 
-/** Registra uma foto (por URL) na acomodação. */
+/** Registra uma foto na acomodação: upload de arquivo (Fase 18) ou, alternativamente, por URL. */
 export async function addPhotoAction(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   const accommodationId = String(formData.get("accommodationId") ?? "");
-  const url = String(formData.get("url") ?? "").trim();
   const alt = String(formData.get("alt") ?? "").trim() || null;
   if (!accommodationId) redirect("/admin/acomodacoes");
+
+  const file = formData.get("file");
+  let url = String(formData.get("url") ?? "").trim();
+
+  // Prioriza o arquivo enviado; faz upload para o Supabase Storage.
+  if (file instanceof File && file.size > 0) {
+    const up = await uploadImage(file);
+    if ("error" in up) {
+      redirect(`/admin/acomodacoes/${accommodationId}?flash=photo_invalid`);
+    }
+    url = up.url;
+  }
+
+  if (!url) redirect(`/admin/acomodacoes/${accommodationId}?flash=photo_invalid`);
 
   const created = await addPhoto({ accommodationId, url, alt, adminId: admin.userId });
   revalidatePath(`/admin/acomodacoes/${accommodationId}`);
@@ -256,8 +270,12 @@ export async function addPhotoAction(formData: FormData): Promise<void> {
 export async function deletePhotoAction(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   const id = String(formData.get("id") ?? "");
+  const url = String(formData.get("url") ?? "");
   const accommodationId = String(formData.get("accommodationId") ?? "");
-  if (id) await deletePhoto(id, admin.userId);
+  if (id) {
+    await deletePhoto(id, admin.userId);
+    if (url) await deleteImageByUrl(url); // remove do storage se for nossa
+  }
   revalidatePath(`/admin/acomodacoes/${accommodationId}`);
   revalidatePath("/acomodacoes");
   redirect(`/admin/acomodacoes/${accommodationId}?flash=photo_deleted`);

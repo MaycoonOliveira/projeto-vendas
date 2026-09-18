@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  experimental: {
+    // Upload de fotos (Fase 18) via Server Action — acima do limite padrão de 1MB.
+    serverActions: { bodySizeLimit: "8mb" },
+  },
   images: {
     // As fotos de origem já são .avif; mantemos avif/webp na otimização.
     formats: ["image/avif", "image/webp"],
