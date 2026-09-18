@@ -15,13 +15,26 @@ loadEnvConfig(process.cwd());
 
 // Não lançamos aqui para permitir `drizzle-kit generate` offline (não conecta ao banco).
 // Comandos que conectam (`migrate`/`push`/`studio`) falham de forma clara com este placeholder.
-// `.trim()`: segredos de CI/Vercel às vezes vêm com espaço/nova-linha no fim (copy-paste),
-// o que quebra `new URL(...)`. Normalizamos aqui.
-const connectionString = (
-  process.env.DIRECT_URL?.trim() ||
-  process.env.DATABASE_URL?.trim() ||
-  "postgres://REQUIRES_DATABASE_URL@localhost:5432/casa_carram"
-);
+// Normaliza a string de conexão vinda de secrets (copy-paste costuma trazer defeitos):
+// remove espaço/nova-linha, aspas ao redor e repara o esquema ausente (`//host...` →
+// `postgresql://host...`). Retorna undefined se não der para formar uma URL válida.
+function normalizeConn(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  let v = raw.trim().replace(/^['"]+|['"]+$/g, "");
+  if (v.startsWith("//")) v = `postgresql:${v}`;
+  try {
+    new URL(v);
+    return v;
+  } catch {
+    return undefined;
+  }
+}
+
+// Migrations usam a conexão direta (session mode); se ela estiver malformada, cai para DATABASE_URL.
+const connectionString =
+  normalizeConn(process.env.DIRECT_URL) ??
+  normalizeConn(process.env.DATABASE_URL) ??
+  "postgres://REQUIRES_DATABASE_URL@localhost:5432/casa_carram";
 
 if (!process.env.DIRECT_URL && !process.env.DATABASE_URL) {
   console.warn(
