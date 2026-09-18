@@ -1,4 +1,11 @@
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  boolean,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 /**
  * Schema das tabelas do Better Auth (Fase 2) — fonte única de auth, versionada no Drizzle.
@@ -75,4 +82,22 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).$defaultFn(
     () => new Date(),
   ),
+});
+
+/**
+ * `rate_limit` (Fase 14) — store PERSISTENTE do rate limit do Better Auth.
+ *
+ * O rate limit nativo é em memória por instância; em serverless (Vercel) cada lambda tem a sua,
+ * tornando o limite ineficaz. Com `rateLimit.storage: "database"` (em `src/lib/auth.ts`), o
+ * Better Auth passa a contar aqui — compartilhado entre todas as instâncias.
+ *
+ * Campos exigidos pelo Better Auth (mapeados por chave camelCase): `key`, `count`, `lastRequest`
+ * (epoch em ms). `key` é único: o algoritmo cria a linha e, em corrida, relê a existente —
+ * garantindo UMA contagem por (IP + rota). `id` é gerado pelo Better Auth.
+ */
+export const rateLimit = pgTable("rate_limit", {
+  id: text("id").primaryKey(),
+  key: text("key").unique(),
+  count: integer("count"),
+  lastRequest: bigint("last_request", { mode: "number" }),
 });

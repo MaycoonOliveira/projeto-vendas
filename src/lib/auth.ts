@@ -41,6 +41,7 @@ export const auth = betterAuth({
       session: schema.session,
       account: schema.account,
       verification: schema.verification,
+      rateLimit: schema.rateLimit,
     },
   }),
   emailAndPassword: {
@@ -87,7 +88,11 @@ Se você não solicitou, ignore este e-mail — sua senha permanece a mesma.`,
     useSecureCookies: process.env.NODE_ENV === "production",
   },
   rateLimit: {
+    // `enabled` sem condição: por padrão o rate limit só liga em produção. Em serverless o
+    // store em memória é por instância (ineficaz), então usamos o banco (compartilhado entre
+    // lambdas). O IP é resolvido do header `x-forwarded-for` (Vercel o preenche).
     enabled: true,
+    storage: "database",
     window: 60,
     max: 100,
     customRules: {
