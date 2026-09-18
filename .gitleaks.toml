@@ -1,0 +1,16 @@
+# Configuração do gitleaks (secret scanning no CI).
+# Estende as regras padrão e libera arquivos que contêm apenas PLACEHOLDERS (sem segredos reais).
+title = "Casa Carram gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Exemplos e documentação — valores são placeholders, não segredos reais."
+paths = [
+  '''\.env\.example$''',
+]
+# Ignora valores-modelo típicos do repositório (ex.: 'troque-por-...').
+regexes = [
+  '''troque-por-um-segredo-forte-de-32-bytes''',
+]

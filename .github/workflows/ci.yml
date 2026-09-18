@@ -37,12 +37,55 @@ jobs:
       - name: Unit tests (Vitest)
         run: npm test
 
+      # Build não precisa de banco: `@/db` valida env preguiçosamente e o auth usa um
+      # segredo só-de-build como fallback. Rotas que tocam o banco são dinâmicas.
       - name: Build
         run: npm run build
 
+  secret-scan:
+    name: Secret scanning (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Usa .gitleaks.toml na raiz (allowlist de placeholders em .env.example).
+      - name: Run gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:latest \
+            detect --source=/repo --config=/repo/.gitleaks.toml --redact --no-banner
+
+  # Decide se o E2E roda: só quando há um banco de TESTE dedicado configurado
+  # (secret E2E_DATABASE_URL). Assim o pipeline não falha quando o E2E não está configurado,
+  # e nunca roda contra o banco de produção.
+  e2e-preflight:
+    name: E2E preflight
+    runs-on: ubuntu-latest
+    outputs:
+      run_e2e: ${{ steps.check.outputs.run_e2e }}
+    steps:
+      - id: check
+        run: |
+          if [ -n "${{ secrets.E2E_DATABASE_URL }}" ]; then
+            echo "run_e2e=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_e2e=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::E2E ignorado: configure o secret E2E_DATABASE_URL (banco de teste) para habilitar."
+          fi
+
   e2e:
     name: E2E (Playwright, desktop + mobile)
+    needs: [quality, e2e-preflight]
+    if: needs.e2e-preflight.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.E2E_DIRECT_URL }}
+      BETTER_AUTH_SECRET: ${{ secrets.E2E_BETTER_AUTH_SECRET }}
+      BETTER_AUTH_URL: http://localhost:3000
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -53,6 +96,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Apply migrations to the test database
+        run: npm run db:migrate
+
+      - name: Seed E2E admin (idempotent)
+        run: npx tsx scripts/seed-e2e-admin.ts
 
       - name: Install Playwright browser (chromium)
         run: npx playwright install --with-deps chromium
@@ -71,16 +120,3 @@ jobs:
           path: playwright-report/
           retention-days: 7
           if-no-files-found: ignore
-
-  secret-scan:
-    name: Secret scanning (gitleaks)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run gitleaks
-        run: |
-          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:latest \
-            detect --source=/repo --redact --verbose --no-banner

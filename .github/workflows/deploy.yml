@@ -1,0 +1,98 @@
+name: Deploy
+
+# Estratégia de ambientes:
+#   develop → DEV   (auto): migra o banco de DEV e publica um deploy de desenvolvimento.
+#   main    → PROD  (gated): pausa para APROVAÇÃO (GitHub Environment "production" com
+#             "Required reviewers") e, aprovado, migra o banco de PROD e publica em produção.
+#
+# Segredos (por GitHub Environment "development" e "production"):
+#   DATABASE_URL, DIRECT_URL          — banco daquele ambiente (dev tem o SEU próprio banco)
+#   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID  — deploy na Vercel
+# Sem VERCEL_TOKEN, o passo de deploy é PULADO (o job continua verde) — permite configurar aos poucos.
+
+on:
+  push:
+    branches: [develop, main]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  deploy-dev:
+    name: Deploy DEV (develop)
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: development
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Apply migrations (DEV database)
+        if: ${{ env.DATABASE_URL != '' }}
+        run: npm run db:migrate
+
+      - name: Deploy to Vercel (development)
+        if: ${{ env.VERCEL_TOKEN != '' }}
+        run: |
+          npm i -g vercel@latest
+          vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+          vercel build --token="$VERCEL_TOKEN"
+          url=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN")
+          echo "DEV deployado em: $url"
+          echo "### Deploy DEV: $url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy não configurado
+        if: ${{ env.VERCEL_TOKEN == '' }}
+        run: echo "::notice::Deploy DEV pulado — configure VERCEL_TOKEN/ORG_ID/PROJECT_ID no Environment 'development'."
+
+  deploy-prod:
+    name: Deploy PROD (main)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Este Environment deve ter "Required reviewers" no GitHub → gera a APROVAÇÃO manual.
+    environment: production
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Apply migrations (PROD database)
+        if: ${{ env.DATABASE_URL != '' }}
+        run: npm run db:migrate
+
+      - name: Deploy to Vercel (production)
+        if: ${{ env.VERCEL_TOKEN != '' }}
+        run: |
+          npm i -g vercel@latest
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
+          url=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          echo "PROD deployado em: $url"
+          echo "### Deploy PROD: $url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy não configurado
+        if: ${{ env.VERCEL_TOKEN == '' }}
+        run: echo "::notice::Deploy PROD pulado — configure VERCEL_TOKEN/ORG_ID/PROJECT_ID no Environment 'production'."
