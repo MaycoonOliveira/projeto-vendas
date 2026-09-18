@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS: [href: string, label: string][] = [
   ["/admin", "Painel"],
   ["/admin/reservas", "Reservas"],
+  ["/admin/financeiro", "Financeiro"],
   ["/admin/acomodacoes", "Acomodações"],
   ["/admin/bloqueios", "Bloqueios"],
   ["/admin/hospedes", "Hóspedes"],
