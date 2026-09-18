@@ -41,6 +41,10 @@ jobs:
           cache: npm
       - run: npm ci
 
+      - name: Diagnose connection strings (safe)
+        if: ${{ env.DATABASE_URL != '' }}
+        run: npx tsx scripts/check-db-url.ts
+
       - name: Apply migrations (DEV database)
         if: ${{ env.DATABASE_URL != '' }}
         run: npm run db:migrate
@@ -78,6 +82,10 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+
+      - name: Diagnose connection strings (safe)
+        if: ${{ env.DATABASE_URL != '' }}
+        run: npx tsx scripts/check-db-url.ts
 
       - name: Apply migrations (PROD database)
         if: ${{ env.DATABASE_URL != '' }}
