@@ -561,27 +561,3 @@ function inArrayStatus(statuses: readonly string[]) {
   )})`;
 }
 
-export type GuestListItem = {
-  id: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  reservations: number;
-};
-
-export async function listGuests(): Promise<GuestListItem[]> {
-  const rows = await db
-    .select({
-      id: guest.id,
-      fullName: guest.fullName,
-      email: guest.email,
-      phone: guest.phone,
-      reservations: sql<number>`count(${reservation.id})::int`,
-    })
-    .from(guest)
-    .leftJoin(reservation, eq(reservation.guestId, guest.id))
-    .groupBy(guest.id)
-    .orderBy(desc(guest.createdAt))
-    .limit(200);
-  return rows;
-}

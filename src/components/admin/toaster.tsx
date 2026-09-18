@@ -36,6 +36,8 @@ const FLASH_MESSAGES: Record<string, { text: string; tone: ToastTone }> = {
   photo_added: { text: "Foto adicionada.", tone: "success" },
   photo_deleted: { text: "Foto removida.", tone: "success" },
   photo_invalid: { text: "URL de imagem inválida (use http/https).", tone: "error" },
+  guest_saved: { text: "Dados do hóspede salvos.", tone: "success" },
+  guest_status: { text: "Status do hóspede atualizado.", tone: "success" },
 };
 
 const TONE_STYLE: Record<ToastTone, { className: string; Icon: typeof CheckCircle2 }> = {
