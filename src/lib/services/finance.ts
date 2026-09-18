@@ -112,6 +112,16 @@ export async function revenueByMonth(months = 12): Promise<MonthlyPoint[]> {
   return out;
 }
 
+/** Total recebido (pagamentos) no mês corrente (America/Sao_Paulo). */
+export async function receivedThisMonthCents(): Promise<number> {
+  const ym = todayInSaoPaulo().slice(0, 7);
+  const rows = await db.execute<{ cents: string }>(sql`
+    SELECT coalesce(sum(amount_cents), 0)::bigint AS cents
+    FROM ${payment}
+    WHERE to_char(paid_on, 'YYYY-MM') = ${ym}`);
+  return Number(rows[0]?.cents ?? 0);
+}
+
 export type MethodTotal = { method: string; cents: number; count: number };
 
 export async function paymentsByMethod(): Promise<MethodTotal[]> {

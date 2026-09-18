@@ -69,6 +69,43 @@ Objetivo: tornar o painel um **centro de operação** e destravar o uso no celul
 ## Fase 15+ (V2) — Pagamentos online (Mercado Pago), upload de fotos, MFA, canais (iCal).
 
 ---
+
+## Transição para PMS (auditoria 2026-09-18 — ver `product-audit.md`)
+
+> Fases 7–10 concluídas. Correções recentes (menu mobile via portal, fotos por acomodação,
+> reservas confirmadas no calendário/painel) já entregues. Novas fases abaixo.
+
+### Fase 16 — UX/UI PMS (mobile-first)  `[EM ANDAMENTO]`
+- **16.1 Dashboard "regra dos 5s"**: cards Check-ins/Check-outs de hoje, Ocupação %, **Receita do mês**;
+  bloco "Precisa de atenção" (pendentes, pagamentos não confirmados). *(parcial: receita do mês)*
+- **16.2 Configurações em seções/tabs**: Dados da Pousada (CNPJ, endereço, contatos, redes) ·
+  Operação (check-in/out, regras pets/festas, mínimo de estadia) · Financeiro & Reservas (expiração
+  de hold, prazos, taxas) · Integrações (URLs iCal — UI agora, sync na Fase B).
+- Depende de: 10.
+
+### Fase 17 — Hóspedes como CRM leve
+- Documento (CPF/Passaporte), aniversário, **histórico de estadias**, **ticket médio gasto**,
+  status **VIP/Blacklist**, observações. Perfil do hóspede (`/admin/hospedes/{id}`).
+- Depende de: 8 (pagamentos), reservas.
+
+### Fase 18 — Upload binário de fotos (Supabase Storage)
+- Troca a origem da `accommodation_photo.url` para upload (bucket + validação magic-bytes + signed
+  URL). Precisa de env de storage (SUPABASE_URL + SERVICE_ROLE_KEY).
+
+### Fase 19 — Fidelidade, RBAC, Mensageria (ex-Fase 13)
+- Fidelidade (contagem de estadias por hóspede, benefícios — sem regra comercial inventada) ·
+  RBAC (proprietário × recepção, menor privilégio, usando `user.role`) · mensageria admin↔hóspede.
+
+### Fase A/B — Availability Engine (canais iCal)
+- **Fase A (design — feito):** ver `product-audit.md §3`.
+- **Fase B (impl., V2):** `external_busy` + `ical_source`, import (`node-ical`) sob demanda,
+  export `/api/ical/export/{token}.ics`, revalidação cruzada anti-overbooking, alerta de conflito.
+
+### Últimas (antes/na produção)
+- **Fase 14 — Hardening & Deploy V1** (segurança, E2E completa, rate-limit persistente, retenção
+  LGPD, domínio/env/backups). **Fase 15+ (V2)** — pagamentos online (Mercado Pago), MFA, canais iCal.
+
+---
 ### Dependências (resumo)
-`7 → 8 → {9, 10} `, `8 → 11`, `{4,5,7} → 12`, hardening/deploy (14) antes de produção real,
-pagamentos online (15) dependem de 8.3 + 10.
+`7 → 8 → {9, 10} → {16, 17}`, `17 → 19`, `8 → 11`, `{4,5,7} → 12`, Availability Engine B = V2,
+hardening/deploy (14) antes de produção real, pagamentos online (15) dependem de 8.3 + 10.

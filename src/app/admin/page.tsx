@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertCircle, CalendarClock, LogIn, LogOut, Users } from "lucide-react";
+import { AlertCircle, LogIn, LogOut, PieChart, Wallet } from "lucide-react";
 
 import { AdminShell } from "@/components/admin/admin-shell";
 import { MonthCalendar } from "@/components/admin/month-calendar";
@@ -7,6 +7,7 @@ import {
   checkInReservationAction,
   checkOutReservationAction,
 } from "@/app/admin/reservas/actions";
+import { receivedThisMonthCents } from "@/lib/services/finance";
 import { requireAdmin } from "@/lib/dal";
 import { todayInSaoPaulo } from "@/lib/dates";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
@@ -39,6 +40,7 @@ export default async function AdminDashboardPage({
   const snap = await operationalSnapshot();
   const accommodations = await listAccommodations();
   const confirmedUpcoming = await upcomingArrivals(6);
+  const monthRevenueCents = await receivedThisMonthCents();
   const activeAccs = accommodations.filter((a) => a.isActive);
   const selectedAcc = activeAccs.find((a) => a.id === acc) ?? activeAccs[0];
 
@@ -60,10 +62,10 @@ export default async function AdminDashboardPage({
       : 0;
 
   const kpis = [
-    { icon: LogIn, label: "Chegadas hoje", value: snap.arrivalsToday.length, href: "/admin/reservas?status=CONFIRMED", tone: "text-green-700 bg-green-50" },
-    { icon: LogOut, label: "Saídas hoje", value: snap.departuresToday.length, href: "/admin/reservas?status=CONFIRMED", tone: "text-blue-700 bg-blue-50" },
-    { icon: Users, label: "Hospedados", value: snap.inHouse.length, href: "/admin/reservas?status=CONFIRMED", tone: "text-foreground bg-muted" },
-    { icon: CalendarClock, label: "Pendentes", value: snap.pendingCount, href: "/admin/reservas?status=PENDING", tone: "text-amber-700 bg-amber-50" },
+    { icon: LogIn, label: "Chegadas hoje", value: String(snap.arrivalsToday.length), href: "/admin/reservas?status=CONFIRMED", tone: "text-green-700 bg-green-50" },
+    { icon: LogOut, label: "Saídas hoje", value: String(snap.departuresToday.length), href: "/admin/reservas?status=CONFIRMED", tone: "text-blue-700 bg-blue-50" },
+    { icon: PieChart, label: "Ocupação hoje", value: `${occPct}%`, href: "/admin", tone: "text-foreground bg-muted" },
+    { icon: Wallet, label: "Receita do mês", value: formatCentsBRL(monthRevenueCents), href: "/admin/financeiro", tone: "text-amber-700 bg-amber-50" },
   ];
 
   const accHref = (id: string) => `/admin?acc=${id}&month=${monthStr}`;
