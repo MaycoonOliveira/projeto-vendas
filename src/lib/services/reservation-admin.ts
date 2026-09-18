@@ -19,6 +19,7 @@ import {
   type Reservation,
 } from "@/lib/services/reservation";
 import { listPayments, totalPaidCents } from "@/lib/services/payment";
+import { createNotification } from "@/lib/services/notification";
 
 /**
  * Operações administrativas de reserva (Fase 6): máquina de estados, edição transacional com
@@ -59,7 +60,7 @@ export async function transitionReservation(
   to: ReservationStatus,
   opts: { adminId?: string | null; reason?: string | null } = {},
 ): Promise<Reservation> {
-  return db.transaction(async (tx) => {
+  const updated = await db.transaction(async (tx) => {
     const rows = await tx.execute<{ status: ReservationStatus }>(
       sql`SELECT status FROM ${reservation} WHERE id = ${id} FOR UPDATE`,
     );
@@ -113,6 +114,20 @@ export async function transitionReservation(
 
     return updated;
   });
+
+  // Notifica a equipe sobre cancelamento (best-effort, fora da transação).
+  if (to === "CANCELLED") {
+    await createNotification({
+      type: "RESERVATION_CANCELLED",
+      title: "Reserva cancelada",
+      body: `A reserva ${updated.publicCode} foi cancelada${opts.reason ? ` — ${opts.reason}` : ""}.`,
+      entityType: "reservation",
+      entityId: id,
+      link: `/admin/reservas/${id}`,
+    });
+  }
+
+  return updated;
 }
 
 export const confirmReservation = (id: string, adminId?: string | null) =>

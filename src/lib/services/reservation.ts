@@ -12,6 +12,7 @@ import {
 } from "@/db/schema";
 import { calculatePrice } from "@/lib/pricing";
 import { generatePublicCode } from "@/lib/reservation-code";
+import { createNotification } from "@/lib/services/notification";
 
 export type Reservation = InferSelectModel<typeof reservation>;
 export type Guest = InferSelectModel<typeof guest>;
@@ -119,7 +120,7 @@ export async function createReservation(
   const publicCode = generatePublicCode();
 
   try {
-    return await db.transaction(async (tx) => {
+    const result = await db.transaction(async (tx) => {
       // 1. Lock da acomodação (serializa etapas 2–5 por acomodação).
       const accRows = await tx.execute<{
         id: string;
@@ -274,6 +275,20 @@ export async function createReservation(
 
       return { reservation: resRow, guest: guestRow, replay: false };
     });
+
+    // Notifica a equipe sobre nova solicitação vinda do site (best-effort, fora da transação).
+    if (!isManual) {
+      await createNotification({
+        type: "RESERVATION_CREATED",
+        title: "Nova solicitação de reserva",
+        body: `${result.guest.fullName} solicitou ${result.reservation.checkIn} → ${result.reservation.checkOut}.`,
+        entityType: "reservation",
+        entityId: result.reservation.id,
+        link: `/admin/reservas/${result.reservation.id}`,
+      });
+    }
+
+    return result;
   } catch (error) {
     const { code, constraint } = pgError(error);
     // Sobreposição na occupancy (barreira final).

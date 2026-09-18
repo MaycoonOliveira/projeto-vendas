@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 import { signOutAction } from "@/app/admin/actions";
+import { NotificationBell } from "@/components/admin/notification-bell";
 import { Toaster } from "@/components/admin/toaster";
 import { cn } from "@/lib/utils";
 
@@ -71,6 +72,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-1">
+            <NotificationBell />
             <form action={signOutAction} className="hidden sm:block">
               <button
                 type="submit"

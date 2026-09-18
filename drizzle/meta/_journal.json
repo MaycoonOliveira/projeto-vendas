@@ -50,6 +50,13 @@
       "when": 1789689912519,
       "tag": "0006_tough_saracen",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789690502742,
+      "tag": "0007_solid_deathbird",
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,8 @@ import { desc, eq, inArray, sql, type InferSelectModel } from "drizzle-orm";
 import { db } from "@/db";
 import { auditLog, payment, PAYMENT_METHODS, reservation } from "@/db/schema";
 import { ReservationConflictError } from "@/lib/services/reservation";
+import { createNotification } from "@/lib/services/notification";
+import { formatCentsBRL } from "@/lib/utils";
 
 export type Payment = InferSelectModel<typeof payment>;
 
@@ -65,6 +67,16 @@ export async function recordPayment(input: {
       metadata: { reservationId: input.reservationId, amountCents: input.amountCents },
     });
 
+    return row;
+  }).then(async (row) => {
+    await createNotification({
+      type: "PAYMENT_RECORDED",
+      title: "Pagamento registrado",
+      body: `${formatCentsBRL(input.amountCents)} recebido${input.method ? ` via ${input.method}` : ""}.`,
+      entityType: "reservation",
+      entityId: input.reservationId,
+      link: `/admin/reservas/${input.reservationId}`,
+    });
     return row;
   });
 }

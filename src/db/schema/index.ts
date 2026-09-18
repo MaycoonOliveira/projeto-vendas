@@ -20,3 +20,4 @@ export * from "./block";
 export * from "./setting";
 export * from "./occupancy";
 export * from "./payment";
+export * from "./notification";
