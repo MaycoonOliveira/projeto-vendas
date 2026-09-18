@@ -14,6 +14,7 @@ import { listAccommodations } from "@/lib/services/accommodation";
 import { listOccupancyForCalendar } from "@/lib/services/block";
 import {
   operationalSnapshot,
+  upcomingArrivals,
   type ReservationListItem,
 } from "@/lib/services/reservation-admin";
 import { formatCentsBRL } from "@/lib/utils";
@@ -37,6 +38,7 @@ export default async function AdminDashboardPage({
 
   const snap = await operationalSnapshot();
   const accommodations = await listAccommodations();
+  const confirmedUpcoming = await upcomingArrivals(6);
   const activeAccs = accommodations.filter((a) => a.isActive);
   const selectedAcc = activeAccs.find((a) => a.id === acc) ?? activeAccs[0];
 
@@ -173,6 +175,35 @@ export default async function AdminDashboardPage({
         <TodayList title="Chegadas de hoje" items={snap.arrivalsToday} empty="Nenhuma chegada hoje." quick="checkin" />
         <TodayList title="Saídas de hoje" items={snap.departuresToday} empty="Nenhuma saída hoje." quick="checkout" />
       </div>
+
+      {/* Próximas reservas confirmadas */}
+      <section className="mt-6 rounded-xl border border-border bg-white p-5">
+        <div className="flex items-center justify-between">
+          <h2 className="font-serif text-lg font-semibold text-foreground">Reservas confirmadas</h2>
+          <Link href="/admin/reservas?status=CONFIRMED" className="text-sm font-medium text-primary hover:underline">
+            Ver todas →
+          </Link>
+        </div>
+        {confirmedUpcoming.length === 0 ? (
+          <p className="mt-3 text-sm text-foreground/50">Nenhuma reserva confirmada nas próximas datas.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-border">
+            {confirmedUpcoming.map((r) => (
+              <li key={r.id} className="flex items-center justify-between gap-3 py-2.5">
+                <Link href={`/admin/reservas/${r.id}`} className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-foreground">{r.guestName}</span>
+                  <span className="block truncate text-xs text-foreground/50">
+                    {r.accommodationName} · {r.checkIn} → {r.checkOut} · {formatCentsBRL(r.totalPriceCents)}
+                  </span>
+                </Link>
+                <span className="shrink-0 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+                  Confirmada
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </AdminShell>
   );
 }
