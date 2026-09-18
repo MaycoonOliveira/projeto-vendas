@@ -21,13 +21,13 @@ const EnvSchema = z.object({
    * Conexão de runtime da aplicação — pooler de transação do Supabase (Supavisor).
    * O cliente usa `prepare: false` por causa do transaction pooling.
    */
-  DATABASE_URL: z.string().min(1, "DATABASE_URL é obrigatória"),
+  DATABASE_URL: z.string().trim().min(1, "DATABASE_URL é obrigatória"),
 
   /**
    * Conexão direta / session mode — usada para MIGRATIONS (prepared statements ok).
    * Quando ausente, o fluxo de migration cai para `DATABASE_URL`.
    */
-  DIRECT_URL: z.string().min(1).optional(),
+  DIRECT_URL: z.string().trim().min(1).optional(),
 
   /**
    * Better Auth (Fase 2). Opcionais no schema para não quebrar `build`/migrations quando

@@ -15,10 +15,13 @@ loadEnvConfig(process.cwd());
 
 // Não lançamos aqui para permitir `drizzle-kit generate` offline (não conecta ao banco).
 // Comandos que conectam (`migrate`/`push`/`studio`) falham de forma clara com este placeholder.
-const connectionString =
-  process.env.DIRECT_URL ??
-  process.env.DATABASE_URL ??
-  "postgres://REQUIRES_DATABASE_URL@localhost:5432/casa_carram";
+// `.trim()`: segredos de CI/Vercel às vezes vêm com espaço/nova-linha no fim (copy-paste),
+// o que quebra `new URL(...)`. Normalizamos aqui.
+const connectionString = (
+  process.env.DIRECT_URL?.trim() ||
+  process.env.DATABASE_URL?.trim() ||
+  "postgres://REQUIRES_DATABASE_URL@localhost:5432/casa_carram"
+);
 
 if (!process.env.DIRECT_URL && !process.env.DATABASE_URL) {
   console.warn(
