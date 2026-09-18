@@ -27,6 +27,7 @@ type AvailabilityResult = {
   description: string | null;
   capacity: number;
   minNights: number;
+  photos: { url: string; alt: string | null }[];
   price: { nights: number; totalCents: number; currency: string };
 };
 
@@ -345,8 +346,25 @@ export function ReservationFlow() {
               {results.map((r) => (
                 <li
                   key={r.id}
-                  className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]"
+                  className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-soft)]"
                 >
+                  {r.photos.length > 0 ? (
+                    <div className="flex gap-2 overflow-x-auto p-2">
+                      {r.photos.map((ph, idx) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={idx}
+                          src={ph.url}
+                          alt={ph.alt ?? r.name}
+                          loading="lazy"
+                          className={`h-44 flex-shrink-0 rounded-xl object-cover ${
+                            r.photos.length === 1 ? "w-full" : "w-64"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                  <div className="p-6">
                   <h3 className="font-serif text-xl font-semibold text-foreground">
                     {r.name}
                   </h3>
@@ -366,6 +384,7 @@ export function ReservationFlow() {
                     <Button type="button" size="md" onClick={() => setSelected(r)}>
                       Reservar
                     </Button>
+                  </div>
                   </div>
                 </li>
               ))}

@@ -13,6 +13,7 @@
  */
 export * from "./auth";
 export * from "./accommodation";
+export * from "./accommodation-photo";
 export * from "./audit";
 export * from "./guest";
 export * from "./reservation";

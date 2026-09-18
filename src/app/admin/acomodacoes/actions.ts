@@ -14,6 +14,7 @@ import {
   softDeleteAccommodation,
   updateAccommodation,
 } from "@/lib/services/accommodation";
+import { addPhoto, deletePhoto } from "@/lib/services/accommodation-photo";
 import {
   AccommodationFormSchema,
   OverrideFormSchema,
@@ -236,4 +237,28 @@ export async function deleteOverrideAction(formData: FormData): Promise<void> {
   }
 
   if (accommodationId) revalidatePath(`/admin/acomodacoes/${accommodationId}`);
+}
+
+/** Registra uma foto (por URL) na acomodação. */
+export async function addPhotoAction(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const accommodationId = String(formData.get("accommodationId") ?? "");
+  const url = String(formData.get("url") ?? "").trim();
+  const alt = String(formData.get("alt") ?? "").trim() || null;
+  if (!accommodationId) redirect("/admin/acomodacoes");
+
+  const created = await addPhoto({ accommodationId, url, alt, adminId: admin.userId });
+  revalidatePath(`/admin/acomodacoes/${accommodationId}`);
+  revalidatePath("/acomodacoes");
+  redirect(`/admin/acomodacoes/${accommodationId}?flash=${created ? "photo_added" : "photo_invalid"}`);
+}
+
+export async function deletePhotoAction(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const accommodationId = String(formData.get("accommodationId") ?? "");
+  if (id) await deletePhoto(id, admin.userId);
+  revalidatePath(`/admin/acomodacoes/${accommodationId}`);
+  revalidatePath("/acomodacoes");
+  redirect(`/admin/acomodacoes/${accommodationId}?flash=photo_deleted`);
 }

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { findAvailableAccommodations } from "@/lib/services/availability";
+import { photosByAccommodation } from "@/lib/services/accommodation-photo";
 import { AvailabilityQuerySchema } from "@/lib/validation/availability";
 
 // Consulta dinâmica (lê o banco e o IP do request) — nunca cacheada. Runtime Node (driver pg).
@@ -58,6 +59,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const photosMap = await photosByAccommodation(available.map((a) => a.accommodation.id));
+
   return NextResponse.json({
     query: { checkin, checkout, guests },
     count: available.length,
@@ -68,6 +71,7 @@ export async function GET(request: NextRequest) {
       description: acc.description,
       capacity: acc.capacity,
       minNights: acc.minNights,
+      photos: (photosMap.get(acc.id) ?? []).map((p) => ({ url: p.url, alt: p.alt })),
       price: {
         nights: price.nights,
         totalCents: price.totalCents,

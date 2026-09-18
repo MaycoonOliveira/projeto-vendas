@@ -33,6 +33,9 @@ const FLASH_MESSAGES: Record<string, { text: string; tone: ToastTone }> = {
   payment_recorded: { text: "Pagamento registrado.", tone: "success" },
   payment_deleted: { text: "Pagamento removido.", tone: "success" },
   payment_invalid: { text: "Não foi possível registrar o pagamento.", tone: "error" },
+  photo_added: { text: "Foto adicionada.", tone: "success" },
+  photo_deleted: { text: "Foto removida.", tone: "success" },
+  photo_invalid: { text: "URL de imagem inválida (use http/https).", tone: "error" },
 };
 
 const TONE_STYLE: Record<ToastTone, { className: string; Icon: typeof CheckCircle2 }> = {

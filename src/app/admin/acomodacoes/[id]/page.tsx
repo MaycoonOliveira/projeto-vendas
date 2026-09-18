@@ -8,11 +8,14 @@ import {
   getAccommodation,
   listOverrides,
 } from "@/lib/services/accommodation";
+import { listPhotos } from "@/lib/services/accommodation-photo";
 import { formatCentsBRL } from "@/lib/utils";
 import { AccommodationForm } from "../accommodation-form";
 import {
+  addPhotoAction,
   deleteAccommodationAction,
   deleteOverrideAction,
+  deletePhotoAction,
   updateAccommodationAction,
 } from "../actions";
 import { OverrideForm } from "../override-form";
@@ -34,6 +37,7 @@ export default async function EditAccommodationPage({
   if (!accommodation) notFound();
 
   const overrides = await listOverrides(id);
+  const photos = await listPhotos(id);
 
   return (
     <AdminShell>
@@ -69,6 +73,77 @@ export default async function EditAccommodationPage({
             sortOrder: accommodation.sortOrder,
           }}
         />
+      </section>
+
+      {/* Fotos */}
+      <section className="mt-12">
+        <h2 className="font-serif text-xl font-semibold text-foreground">Fotos</h2>
+        <p className="mt-1 text-sm text-foreground/60">
+          Aparecem no site público, na busca de disponibilidade. Informe o endereço (URL) da
+          imagem — ex.: link de um serviço de hospedagem de imagens.
+        </p>
+
+        <form
+          action={addPhotoAction}
+          className="mt-4 grid gap-3 rounded-xl border border-border bg-white p-4 sm:grid-cols-[1.6fr_1fr_auto] sm:items-end"
+        >
+          <input type="hidden" name="accommodationId" value={accommodation.id} />
+          <div>
+            <label htmlFor="url" className="mb-1 block text-xs font-medium text-foreground/70">
+              URL da imagem
+            </label>
+            <input
+              id="url"
+              name="url"
+              type="url"
+              required
+              placeholder="https://…/foto.jpg"
+              className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
+            />
+          </div>
+          <div>
+            <label htmlFor="alt" className="mb-1 block text-xs font-medium text-foreground/70">
+              Descrição (alt)
+            </label>
+            <input
+              id="alt"
+              name="alt"
+              placeholder="Suíte com vista"
+              className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
+            />
+          </div>
+          <button className="h-10 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
+            Adicionar
+          </button>
+        </form>
+
+        {photos.length > 0 ? (
+          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {photos.map((p) => (
+              <li key={p.id} className="group relative overflow-hidden rounded-xl border border-border bg-muted">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p.url}
+                  alt={p.alt ?? accommodation.name}
+                  loading="lazy"
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <form action={deletePhotoAction} className="absolute right-2 top-2">
+                  <input type="hidden" name="id" value={p.id} />
+                  <input type="hidden" name="accommodationId" value={accommodation.id} />
+                  <button
+                    className="rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-red-600 shadow-sm hover:bg-white"
+                    aria-label="Remover foto"
+                  >
+                    Remover
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-4 text-sm text-foreground/50">Nenhuma foto cadastrada.</p>
+        )}
       </section>
 
       <section className="mt-12">
