@@ -50,18 +50,25 @@ export const auth = betterAuth({
     requireEmailVerification: false,
     resetPasswordTokenExpiresIn: 60 * 30, // 30 min (token de uso único)
     revokeSessionsOnPasswordReset: true, // invalida todas as sessões ao trocar a senha
-    sendResetPassword: async ({ user, url }) => {
+    sendResetPassword: async ({ user, token }) => {
+      // O link precisa apontar para a NOSSA página de redefinição (`/admin/redefinir-senha`),
+      // que lê `?token=` — não para o path padrão do Better Auth (`/reset-password/{token}`),
+      // que não existe no app (dava 404). Base = BETTER_AUTH_URL (a URL pública do ambiente).
+      const base = (process.env.BETTER_AUTH_URL ?? "http://localhost:3000")
+        .trim()
+        .replace(/\/+$/, "");
+      const resetUrl = `${base}/admin/redefinir-senha?token=${encodeURIComponent(token)}`;
       await sendEmail({
         to: user.email,
         subject: "Redefinição de senha — Casa Carram",
         text: `Recebemos um pedido para redefinir a senha do painel da Casa Carram.
 
 Abra o link abaixo (expira em 30 minutos):
-${url}
+${resetUrl}
 
 Se você não solicitou, ignore este e-mail — sua senha permanece a mesma.`,
         html: `<p>Recebemos um pedido para redefinir a senha do painel da Casa Carram.</p>
-<p><a href="${url}">Redefinir minha senha</a> (o link expira em 30 minutos).</p>
+<p><a href="${resetUrl}">Redefinir minha senha</a> (o link expira em 30 minutos).</p>
 <p>Se você não solicitou, ignore este e-mail — sua senha permanece a mesma.</p>`,
       });
     },
