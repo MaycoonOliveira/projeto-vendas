@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -32,6 +33,12 @@ function isActive(pathname: string, href: string): boolean {
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   // Trava a rolagem e fecha com Escape enquanto o drawer está aberto.
   useEffect(() => {
@@ -97,70 +104,75 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Drawer mobile */}
-      <div
-        id="admin-mobile-menu"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Menu do painel"
-        aria-hidden={!open}
-        className={cn("fixed inset-0 z-50 lg:hidden", open ? "visible" : "invisible")}
-      >
-        <div
-          onClick={() => setOpen(false)}
-          aria-hidden
-          className={cn(
-            "absolute inset-0 bg-foreground/40 backdrop-blur-sm transition-opacity duration-300",
-            open ? "opacity-100" : "opacity-0",
-          )}
-        />
-        <div
-          className={cn(
-            "absolute right-0 top-0 flex h-full w-[82%] max-w-xs flex-col bg-white shadow-[var(--shadow-lift)] transition-transform duration-300 ease-out",
-            open ? "translate-x-0" : "translate-x-full",
-          )}
-        >
-          <div className="flex h-14 items-center justify-between border-b border-border px-5">
-            <span className="font-serif text-base font-semibold">Painel</span>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Fechar menu"
-              className="inline-flex size-10 items-center justify-center rounded-full text-foreground hover:bg-foreground/5"
+      {/* Drawer mobile — portal no <body> para escapar do containing-block do header (backdrop-blur). */}
+      {mounted
+        ? createPortal(
+            <div
+              id="admin-mobile-menu"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu do painel"
+              aria-hidden={!open}
+              className={cn("fixed inset-0 z-[60] lg:hidden", open ? "visible" : "invisible")}
             >
-              <X className="size-6" aria-hidden />
-            </button>
-          </div>
-          <nav className="flex flex-1 flex-col gap-1 px-3 py-3" aria-label="Navegação admin mobile">
-            {NAV_ITEMS.map(([href, label]) => (
-              <Link
-                key={href}
-                href={href}
+              <div
                 onClick={() => setOpen(false)}
-                aria-current={isActive(pathname, href) ? "page" : undefined}
+                aria-hidden
                 className={cn(
-                  "rounded-xl px-4 py-3 text-base transition-colors",
-                  isActive(pathname, href)
-                    ? "bg-muted font-medium text-foreground"
-                    : "text-foreground/80 hover:bg-muted",
+                  "absolute inset-0 bg-foreground/40 backdrop-blur-sm transition-opacity duration-300",
+                  open ? "opacity-100" : "opacity-0",
+                )}
+              />
+              <div
+                className={cn(
+                  "absolute right-0 top-0 flex h-full w-[82%] max-w-xs flex-col bg-white shadow-[var(--shadow-lift)] transition-transform duration-300 ease-out",
+                  open ? "translate-x-0" : "translate-x-full",
                 )}
               >
-                {label}
-              </Link>
-            ))}
-          </nav>
-          <div className="border-t border-border px-5 py-4">
-            <form action={signOutAction}>
-              <button
-                type="submit"
-                className="w-full rounded-xl border border-border px-4 py-3 text-left text-base text-foreground/80 hover:bg-muted"
-              >
-                Sair
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
+                <div className="flex h-14 items-center justify-between border-b border-border px-5">
+                  <span className="font-serif text-base font-semibold">Painel</span>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    aria-label="Fechar menu"
+                    className="inline-flex size-10 items-center justify-center rounded-full text-foreground hover:bg-foreground/5"
+                  >
+                    <X className="size-6" aria-hidden />
+                  </button>
+                </div>
+                <nav className="flex flex-1 flex-col gap-1 px-3 py-3" aria-label="Navegação admin mobile">
+                  {NAV_ITEMS.map(([href, label]) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setOpen(false)}
+                      aria-current={isActive(pathname, href) ? "page" : undefined}
+                      className={cn(
+                        "rounded-xl px-4 py-3 text-base transition-colors",
+                        isActive(pathname, href)
+                          ? "bg-muted font-medium text-foreground"
+                          : "text-foreground/80 hover:bg-muted",
+                      )}
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </nav>
+                <div className="border-t border-border px-5 py-4">
+                  <form action={signOutAction}>
+                    <button
+                      type="submit"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-left text-base text-foreground/80 hover:bg-muted"
+                    >
+                      Sair
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
       <Toaster />

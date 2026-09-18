@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -14,6 +15,13 @@ export function Navbar() {
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Portal só após a montagem (evita divergência de hidratação).
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -113,78 +121,84 @@ export function Navbar() {
         </button>
       </Container>
 
-      {/* Drawer mobile */}
-      <div
-        id="mobile-menu"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Menu"
-        aria-hidden={!open}
-        className={cn(
-          "fixed inset-0 z-50 transition-[visibility] lg:hidden",
-          open ? "visible" : "invisible",
-        )}
-      >
-        <div
-          onClick={() => setOpen(false)}
-          className={cn(
-            "absolute inset-0 bg-foreground/40 backdrop-blur-sm transition-opacity duration-300",
-            open ? "opacity-100" : "opacity-0",
-          )}
-          aria-hidden
-        />
-        <div
-          className={cn(
-            "absolute right-0 top-0 flex h-full w-[82%] max-w-sm flex-col bg-background shadow-[var(--shadow-lift)] transition-transform duration-300 ease-out",
-            open ? "translate-x-0" : "translate-x-full",
-          )}
-        >
-          <div className="flex h-16 items-center justify-between px-6">
-            <span className="font-display text-xl">{siteConfig.name}</span>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Fechar menu"
-              className="inline-flex size-11 items-center justify-center rounded-full text-foreground hover:bg-foreground/5"
+      {/* Drawer mobile — renderizado via portal no <body> para escapar do containing-block
+          criado pelo backdrop-blur do header (senão o painel fica confinado/transparente). */}
+      {mounted
+        ? createPortal(
+            <div
+              id="mobile-menu"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu"
+              aria-hidden={!open}
+              className={cn(
+                "fixed inset-0 z-[60] transition-[visibility] lg:hidden",
+                open ? "visible" : "invisible",
+              )}
             >
-              <X className="size-6" aria-hidden />
-            </button>
-          </div>
+              <div
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "absolute inset-0 bg-foreground/40 backdrop-blur-sm transition-opacity duration-300",
+                  open ? "opacity-100" : "opacity-0",
+                )}
+                aria-hidden
+              />
+              <div
+                className={cn(
+                  "absolute right-0 top-0 flex h-full w-[82%] max-w-sm flex-col bg-background shadow-[var(--shadow-lift)] transition-transform duration-300 ease-out",
+                  open ? "translate-x-0" : "translate-x-full",
+                )}
+              >
+                <div className="flex h-16 items-center justify-between px-6">
+                  <span className="font-display text-xl">{siteConfig.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    aria-label="Fechar menu"
+                    className="inline-flex size-11 items-center justify-center rounded-full text-foreground hover:bg-foreground/5"
+                  >
+                    <X className="size-6" aria-hidden />
+                  </button>
+                </div>
 
-          <nav
-            className="flex flex-col gap-1 px-4 py-4"
-            aria-label="Navegação mobile"
-          >
-            {siteConfig.nav.map((item) => {
-              const active =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "rounded-xl px-4 py-3 text-lg font-medium transition-colors",
-                    active
-                      ? "bg-muted text-foreground"
-                      : "text-foreground/80 hover:bg-muted",
-                  )}
+                <nav
+                  className="flex flex-col gap-1 px-4 py-4"
+                  aria-label="Navegação mobile"
                 >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+                  {siteConfig.nav.map((item) => {
+                    const active =
+                      item.href === "/"
+                        ? pathname === "/"
+                        : pathname.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "rounded-xl px-4 py-3 text-lg font-medium transition-colors",
+                          active
+                            ? "bg-muted text-foreground"
+                            : "text-foreground/80 hover:bg-muted",
+                        )}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
 
-          <div className="mt-auto flex flex-col gap-3 border-t border-border px-6 py-6">
-            <ReserveButton className="w-full" source="mobile-menu" />
-            <WhatsappButton className="w-full" source="mobile-menu" />
-          </div>
-        </div>
-      </div>
+                <div className="mt-auto flex flex-col gap-3 border-t border-border px-6 py-6">
+                  <ReserveButton className="w-full" source="mobile-menu" />
+                  <WhatsappButton className="w-full" source="mobile-menu" />
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </header>
   );
 }
