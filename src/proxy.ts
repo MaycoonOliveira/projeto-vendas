@@ -49,12 +49,11 @@ export function proxy(request: NextRequest): NextResponse {
       if (pathname !== "/admin") url.searchParams.set("redirect", pathname);
       return withSecurityHeaders(NextResponse.redirect(url));
     }
-    // Com cookie tentando ver uma rota pública de auth → painel.
-    if (sessionCookie && isPublicAdmin) {
-      return withSecurityHeaders(
-        NextResponse.redirect(new URL("/admin", request.url)),
-      );
-    }
+    // IMPORTANTE (anti-loop): NÃO redirecionamos "cookie presente + rota pública → /admin" aqui.
+    // `getSessionCookie` só confirma a EXISTÊNCIA do cookie, não sua validade no DB. Um cookie
+    // obsoleto (sessão expirada/revogada, banco recriado em dev) faria: /admin → DAL manda p/
+    // login → proxy manda de volta p/ /admin → loop (NotAllowedRootHTTPFallbackError). A cortesia
+    // de "já logado pula o login" é feita na PÁGINA de login, com checagem REAL no DB (sem loop).
 
     // CSP estrita baseada em nonce — SÓ em produção. Em dev, a CSP (nonce/strict-dynamic e,
     // sobretudo, `upgrade-insecure-requests`) quebra o carregamento dos scripts do Next em

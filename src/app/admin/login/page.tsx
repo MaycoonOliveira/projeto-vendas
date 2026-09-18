@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { redirect as navRedirect } from "next/navigation";
 
+import { getSession } from "@/lib/dal";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
@@ -18,6 +20,13 @@ export default async function AdminLoginPage({
   const { redirect, reset } = await searchParams;
   const redirectTo =
     redirect && redirect.startsWith("/admin") ? redirect : undefined;
+
+  // Cortesia loop-safe: só redireciona quem tem sessão REAL e válida no DB (não só o cookie).
+  const session = await getSession();
+  const activeUser = session?.user as { isActive?: boolean } | undefined;
+  if (activeUser && activeUser.isActive !== false) {
+    navRedirect(redirectTo ?? "/admin");
+  }
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-muted px-4 py-12">
