@@ -85,6 +85,13 @@
       "when": 1789768524736,
       "tag": "0011_public_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1789769412110,
+      "tag": "0012_audit_log_append_only",
+      "breakpoints": true
     }
   ]
 }
