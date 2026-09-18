@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 
 import { AdminShell } from "@/components/admin/admin-shell";
-import { requireAdmin } from "@/lib/dal";
+import { requireOwner } from "@/lib/dal";
 import { getSettingsMap } from "@/lib/services/setting";
 import { SettingsForm } from "./settings-form";
 
 export const metadata: Metadata = { title: "Configurações" };
 
 export default async function ConfiguracoesPage() {
-  await requireAdmin();
+  await requireOwner();
   const values = await getSettingsMap();
 
   return (

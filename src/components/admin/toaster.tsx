@@ -38,6 +38,11 @@ const FLASH_MESSAGES: Record<string, { text: string; tone: ToastTone }> = {
   photo_invalid: { text: "URL de imagem inválida (use http/https).", tone: "error" },
   guest_saved: { text: "Dados do hóspede salvos.", tone: "success" },
   guest_status: { text: "Status do hóspede atualizado.", tone: "success" },
+  role_saved: { text: "Papel atualizado.", tone: "success" },
+  active_saved: { text: "Status do usuário atualizado.", tone: "success" },
+  team_error: { text: "Não foi possível concluir (ver regras de acesso).", tone: "error" },
+  denied: { text: "Acesso restrito ao proprietário.", tone: "error" },
+  msg_logged: { text: "Comunicação registrada.", tone: "success" },
 };
 
 const TONE_STYLE: Record<ToastTone, { className: string; Icon: typeof CheckCircle2 }> = {

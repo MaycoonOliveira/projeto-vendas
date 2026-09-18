@@ -3,7 +3,7 @@ import { BadgeDollarSign, Clock, TrendingUp, Wallet } from "lucide-react";
 
 import { AdminShell } from "@/components/admin/admin-shell";
 import { RevenueChart } from "@/components/admin/revenue-chart";
-import { requireAdmin } from "@/lib/dal";
+import { requireOwner } from "@/lib/dal";
 import { RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
 import {
   financeKpis,
@@ -17,7 +17,7 @@ import { formatCentsBRL } from "@/lib/utils";
 export const metadata: Metadata = { title: "Financeiro" };
 
 export default async function FinanceiroPage() {
-  await requireAdmin();
+  await requireOwner();
 
   const [kpis, monthly, byStatus, byMethod] = await Promise.all([
     financeKpis(),

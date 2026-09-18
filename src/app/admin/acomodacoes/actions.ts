@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import type { z } from "zod";
 
 import { writeAudit } from "@/lib/audit";
-import { requireAdmin } from "@/lib/dal";
+import { requireAdmin, requireOwner } from "@/lib/dal";
 import {
   ConflictError,
   createAccommodation,
@@ -147,7 +147,7 @@ export async function updateAccommodationAction(
 }
 
 export async function deleteAccommodationAction(formData: FormData): Promise<void> {
-  const admin = await requireAdmin();
+  const admin = await requireOwner();
   const id = String(formData.get("id") ?? "");
   if (!id) redirect("/admin/acomodacoes");
 

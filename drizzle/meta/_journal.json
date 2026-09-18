@@ -71,6 +71,13 @@
       "when": 1789738339333,
       "tag": "0009_normal_reptil",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789738962503,
+      "tag": "0010_lyrical_logan",
+      "breakpoints": true
     }
   ]
 }

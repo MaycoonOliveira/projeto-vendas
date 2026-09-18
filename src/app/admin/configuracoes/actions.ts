@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAdmin } from "@/lib/dal";
+import { requireOwner } from "@/lib/dal";
 import { SETTING_FIELDS, setSetting } from "@/lib/services/setting";
 import { writeAudit } from "@/lib/audit";
 
@@ -12,7 +12,7 @@ export async function saveSettingsAction(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const admin = await requireAdmin();
+  const admin = await requireOwner();
 
   for (const field of SETTING_FIELDS) {
     const value = String(formData.get(field.key) ?? "").slice(0, 4000);

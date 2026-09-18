@@ -16,14 +16,15 @@ import { cn } from "@/lib/utils";
  * Client Component por causa do drawer mobile (estado aberto/fechado, scroll-lock, Escape).
  * A checagem de sessão continua em cada página via DAL (`requireAdmin`).
  */
-const NAV_ITEMS: [href: string, label: string][] = [
+const NAV_ITEMS: [href: string, label: string, ownerOnly?: boolean][] = [
   ["/admin", "Painel"],
   ["/admin/reservas", "Reservas"],
-  ["/admin/financeiro", "Financeiro"],
+  ["/admin/financeiro", "Financeiro", true],
   ["/admin/acomodacoes", "Acomodações"],
   ["/admin/bloqueios", "Bloqueios"],
   ["/admin/hospedes", "Hóspedes"],
-  ["/admin/configuracoes", "Configurações"],
+  ["/admin/equipe", "Equipe", true],
+  ["/admin/configuracoes", "Configurações", true],
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -34,11 +35,19 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [owner, setOwner] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
+    fetch("/api/admin/me", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setOwner(Boolean(d.owner)))
+      .catch(() => {});
   }, []);
+
+  // RBAC: itens só do proprietário ficam escondidos para STAFF.
+  const navItems = NAV_ITEMS.filter(([, , ownerOnly]) => !ownerOnly || owner);
 
   // Trava a rolagem e fecha com Escape enquanto o drawer está aberto.
   useEffect(() => {
@@ -61,7 +70,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               Casa Carram · Admin
             </Link>
             <nav className="hidden items-center gap-4 text-sm lg:flex" aria-label="Navegação admin">
-              {NAV_ITEMS.map(([href, label]) => (
+              {navItems.map(([href, label]) => (
                 <Link
                   key={href}
                   href={href}
@@ -141,7 +150,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   </button>
                 </div>
                 <nav className="flex flex-1 flex-col gap-1 px-3 py-3" aria-label="Navegação admin mobile">
-                  {NAV_ITEMS.map(([href, label]) => (
+                  {navItems.map(([href, label]) => (
                     <Link
                       key={href}
                       href={href}

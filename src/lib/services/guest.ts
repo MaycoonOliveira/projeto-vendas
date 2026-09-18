@@ -5,6 +5,9 @@ import {
   accommodation,
   auditLog,
   guest,
+  GUEST_MESSAGE_CHANNELS,
+  GUEST_MESSAGE_DIRECTIONS,
+  guestMessage,
   GUEST_STATUSES,
   payment,
   reservation,
@@ -12,6 +15,7 @@ import {
 import { loyaltyTier, type LoyaltyTier } from "@/lib/loyalty";
 
 export type Guest = InferSelectModel<typeof guest>;
+export type GuestMessage = InferSelectModel<typeof guestMessage>;
 
 const REVENUE_STATUSES = ["CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "COMPLETED"] as const;
 
@@ -32,6 +36,7 @@ export type GuestProfile = {
   totalSpentCents: number;
   avgTicketCents: number;
   tier: LoyaltyTier;
+  messages: GuestMessage[];
 };
 
 export async function getGuestProfile(id: string): Promise<GuestProfile | null> {
@@ -68,6 +73,8 @@ export async function getGuestProfile(id: string): Promise<GuestProfile | null> 
     .where(eq(reservation.guestId, id));
   const totalSpentCents = paidRows[0]?.cents ?? 0;
 
+  const messages = await listGuestMessages(id);
+
   return {
     guest: g,
     stays,
@@ -75,7 +82,50 @@ export async function getGuestProfile(id: string): Promise<GuestProfile | null> 
     totalSpentCents,
     avgTicketCents,
     tier: loyaltyTier(staysCount),
+    messages,
   };
+}
+
+/** Comunicações (mensageria V1) do hóspede, mais recentes primeiro. */
+export async function listGuestMessages(guestId: string): Promise<GuestMessage[]> {
+  return db
+    .select()
+    .from(guestMessage)
+    .where(eq(guestMessage.guestId, guestId))
+    .orderBy(desc(guestMessage.createdAt))
+    .limit(100);
+}
+
+/** Registra uma comunicação com o hóspede. */
+export async function addGuestMessage(input: {
+  guestId: string;
+  channel: string;
+  direction: string;
+  body: string;
+  adminId?: string | null;
+}): Promise<GuestMessage | null> {
+  const channel = (GUEST_MESSAGE_CHANNELS as readonly string[]).includes(input.channel)
+    ? input.channel
+    : "NOTE";
+  const direction = (GUEST_MESSAGE_DIRECTIONS as readonly string[]).includes(input.direction)
+    ? input.direction
+    : "OUT";
+  const body = input.body.trim().slice(0, 4000);
+  if (!body) return null;
+
+  const [row] = await db
+    .insert(guestMessage)
+    .values({ guestId: input.guestId, channel, direction, body, createdByAdminId: input.adminId ?? null })
+    .returning();
+  await db.insert(auditLog).values({
+    actorType: "USER",
+    actorId: input.adminId ?? null,
+    action: "guest.message",
+    entityType: "guest",
+    entityId: input.guestId,
+    metadata: { channel, direction },
+  });
+  return row;
 }
 
 export async function updateGuestCrm(
@@ -135,9 +185,10 @@ export type GuestListItem = {
   phone: string;
   status: string;
   reservations: number;
+  stays: number;
 };
 
-/** Lista de hóspedes com contagem de reservas + status (CRM). */
+/** Lista de hóspedes com contagem de reservas, estadias reais + status (CRM). */
 export async function listGuestsCrm(q?: string): Promise<GuestListItem[]> {
   const term = q?.trim();
   const rows = await db
@@ -148,6 +199,7 @@ export async function listGuestsCrm(q?: string): Promise<GuestListItem[]> {
       phone: guest.phone,
       status: guest.status,
       reservations: sql<number>`count(${reservation.id})::int`,
+      stays: sql<number>`count(${reservation.id}) filter (where ${reservation.status} in ('CONFIRMED','CHECKED_IN','CHECKED_OUT','COMPLETED'))::int`,
     })
     .from(guest)
     .leftJoin(reservation, eq(reservation.guestId, guest.id))

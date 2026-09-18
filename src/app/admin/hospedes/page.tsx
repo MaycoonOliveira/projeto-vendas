@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/dal";
 import { listGuestsCrm } from "@/lib/services/guest";
+import { loyaltyTier } from "@/lib/loyalty";
 
 export const metadata: Metadata = { title: "Hóspedes" };
 
@@ -53,6 +54,7 @@ export default async function HospedesPage({
                 <th className="px-4 py-3 font-medium">Nome</th>
                 <th className="px-4 py-3 font-medium">Contato</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Fidelidade</th>
                 <th className="px-4 py-3 font-medium">Reservas</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -71,6 +73,16 @@ export default async function HospedesPage({
                       <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.className}`}>
                         {badge.label}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const t = loyaltyTier(g.stays);
+                        return (
+                          <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${t.className}`}>
+                            {t.label}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 py-3 text-foreground/60">{g.reservations}</td>
                     <td className="px-4 py-3 text-right">

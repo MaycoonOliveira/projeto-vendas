@@ -44,11 +44,30 @@ export const verifySession = cache(async (): Promise<SessionInfo> => {
   };
 });
 
-/** Igual a verifySession, mas também exige papel ADMIN (base p/ RBAC no V2). */
+/**
+ * RBAC (Fase 19). Papéis: OWNER (proprietário, acesso total) e STAFF (recepção, operação do dia).
+ * `ADMIN` é o papel legado dos usuários existentes — tratado como OWNER (retrocompatível).
+ */
+const STAFF_ROLES = new Set(["ADMIN", "OWNER", "STAFF"]);
+
+export function isOwner(role: string): boolean {
+  return role === "OWNER" || role === "ADMIN";
+}
+
+/** Exige sessão de qualquer membro da equipe (OWNER/STAFF/ADMIN). */
 export async function requireAdmin(): Promise<SessionInfo> {
   const session = await verifySession();
-  if (session.role !== "ADMIN") {
+  if (!STAFF_ROLES.has(session.role)) {
     redirect("/admin/login");
+  }
+  return session;
+}
+
+/** Exige papel de proprietário (OWNER/ADMIN) — financeiro, configurações, equipe. */
+export async function requireOwner(): Promise<SessionInfo> {
+  const session = await requireAdmin();
+  if (!isOwner(session.role)) {
+    redirect("/admin?flash=denied");
   }
   return session;
 }

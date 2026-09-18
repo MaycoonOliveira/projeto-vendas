@@ -9,7 +9,7 @@ import { GUEST_STATUSES } from "@/db/schema";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
 import { staysToNextTier } from "@/lib/loyalty";
 import { formatCentsBRL } from "@/lib/utils";
-import { setGuestStatusAction, updateGuestCrmAction } from "../actions";
+import { addGuestMessageAction, setGuestStatusAction, updateGuestCrmAction } from "../actions";
 
 export const metadata: Metadata = { title: "Hóspede" };
 
@@ -36,7 +36,7 @@ export default async function GuestProfilePage({
   const profile = await getGuestProfile(id);
   if (!profile) notFound();
 
-  const { guest: g, stays, staysCount, totalSpentCents, avgTicketCents, tier } = profile;
+  const { guest: g, stays, staysCount, totalSpentCents, avgTicketCents, tier, messages } = profile;
   const statusBadge = STATUS_BADGE[g.status] ?? STATUS_BADGE.NORMAL;
   const nextTier = staysToNextTier(staysCount);
 
@@ -136,6 +136,65 @@ export default async function GuestProfilePage({
           </form>
         </section>
       </div>
+
+      {/* Comunicações (mensageria) */}
+      <section className="mt-6 rounded-xl border border-border bg-white p-5">
+        <h2 className="text-sm font-semibold text-foreground">Comunicações</h2>
+        <p className="mt-1 text-xs text-foreground/50">
+          Histórico de contatos com o hóspede (WhatsApp, e-mail, telefone ou nota interna).
+        </p>
+
+        <form action={addGuestMessageAction} className="mt-3 grid gap-3 sm:grid-cols-[9rem_8rem_1fr_auto] sm:items-end">
+          <input type="hidden" name="guestId" value={g.id} />
+          <div>
+            <label htmlFor="channel" className={labelClass}>Canal</label>
+            <select id="channel" name="channel" defaultValue="WHATSAPP" className={inputClass}>
+              <option value="WHATSAPP">WhatsApp</option>
+              <option value="EMAIL">E-mail</option>
+              <option value="PHONE">Telefone</option>
+              <option value="NOTE">Nota</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="direction" className={labelClass}>Direção</label>
+            <select id="direction" name="direction" defaultValue="OUT" className={inputClass}>
+              <option value="OUT">Enviada</option>
+              <option value="IN">Recebida</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="body" className={labelClass}>Mensagem</label>
+            <input id="body" name="body" required placeholder="Resumo do contato…" className={inputClass} />
+          </div>
+          <button className="h-10 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
+            Registrar
+          </button>
+        </form>
+
+        {messages.length > 0 ? (
+          <ul className="mt-4 flex flex-col gap-2.5">
+            {messages.map((m) => (
+              <li key={m.id} className="flex gap-3 text-sm">
+                <span
+                  className={`mt-0.5 h-fit shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                    m.direction === "OUT" ? "bg-primary/10 text-primary" : "bg-blue-50 text-blue-700"
+                  }`}
+                >
+                  {m.direction === "OUT" ? "Enviada" : "Recebida"}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-foreground/80">{m.body}</p>
+                  <p className="text-[11px] text-foreground/40">
+                    {m.channel} · {new Date(m.createdAt).toLocaleString("pt-BR")}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-foreground/50">Nenhuma comunicação registrada.</p>
+        )}
+      </section>
 
       {/* Histórico de estadias */}
       <section className="mt-6 rounded-xl border border-border bg-white p-5">
