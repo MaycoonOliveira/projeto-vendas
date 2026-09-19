@@ -9,6 +9,7 @@ import {
   getReservationByPublicCode,
   isExpiredHold,
 } from "@/lib/services/reservation";
+import { perNightSummary } from "@/lib/payment-status";
 import { formatCentsBRL } from "@/lib/utils";
 
 // Página por capability (código secreto) — nunca indexar; sempre dinâmica (lê o banco).
@@ -38,7 +39,8 @@ export default async function ReservaPage({
   const found = await getReservationByPublicCode(publicCode);
   if (!found) notFound();
 
-  const { reservation: r, guest, accommodationName } = found;
+  const { reservation: r, guest, accommodationName, accommodationCapacity } =
+    found;
   const status = isExpiredHold(r) ? "EXPIRED" : r.status;
   const badge = STATUS_LABEL[status] ?? STATUS_LABEL.PENDING;
   const firstName = guest?.fullName?.trim().split(/\s+/)[0] ?? "";
@@ -78,12 +80,22 @@ export default async function ReservaPage({
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Hóspedes</dt>
-                <dd className="text-foreground">{r.guestsCount}</dd>
+                <dd className="text-foreground">
+                  {r.guestsCount}{" "}
+                  <span className="text-muted-foreground">
+                    (até {accommodationCapacity})
+                  </span>
+                </dd>
               </div>
-              <div className="flex justify-between border-t border-border pt-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-2 border-t border-border pt-3">
                 <dt className="font-medium text-foreground">Total</dt>
-                <dd className="font-semibold text-foreground">
-                  {formatCentsBRL(r.totalPriceCents)}
+                <dd className="text-right">
+                  <span className="font-semibold text-foreground">
+                    {formatCentsBRL(r.totalPriceCents)}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {perNightSummary(r.totalPriceCents, r.nights)}
+                  </span>
                 </dd>
               </div>
             </dl>

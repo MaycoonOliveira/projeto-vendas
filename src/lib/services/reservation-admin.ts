@@ -339,6 +339,7 @@ export type ReservationListItem = {
   holdExpiresAt: Date | null;
   guestName: string;
   accommodationName: string;
+  accommodationCapacity: number;
 };
 
 export type ReservationListResult = {
@@ -443,6 +444,7 @@ export async function upcomingArrivals(limitN = 8): Promise<ReservationListItem[
       holdExpiresAt: reservation.holdExpiresAt,
       guestName: guest.fullName,
       accommodationName: accommodation.name,
+      accommodationCapacity: accommodation.capacity,
     })
     .from(reservation)
     .innerJoin(guest, eq(guest.id, reservation.guestId))
@@ -467,6 +469,7 @@ function reservationListSelect() {
     holdExpiresAt: reservation.holdExpiresAt,
     guestName: guest.fullName,
     accommodationName: accommodation.name,
+    accommodationCapacity: accommodation.capacity,
   };
 }
 

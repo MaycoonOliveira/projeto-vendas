@@ -5,6 +5,8 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/dal";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
 import { listReservations } from "@/lib/services/reservation-admin";
+import { totalPaidByReservation } from "@/lib/services/payment";
+import { paymentStatus, perNightSummary } from "@/lib/payment-status";
 import type { ReservationStatus } from "@/db/schema";
 import { formatCentsBRL } from "@/lib/utils";
 
@@ -43,6 +45,8 @@ export default async function ReservasPage({
     page: pageNum,
   });
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  // Agregado de pagamentos da página inteira em UMA query (sem N+1) — FIX 6.
+  const paidByRes = await totalPaidByReservation(reservations.map((r) => r.id));
 
   const qsWith = (over: Record<string, string | number | undefined>) => {
     const sp = new URLSearchParams();
@@ -122,6 +126,7 @@ export default async function ReservasPage({
                 <th className="px-4 py-3 font-medium">Hóspede</th>
                 <th className="px-4 py-3 font-medium">Período</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Pagamento</th>
                 <th className="px-4 py-3 font-medium">Total</th>
               </tr>
             </thead>
@@ -129,12 +134,17 @@ export default async function ReservasPage({
               {reservations.map((r) => {
                 const eff = effectiveStatus(r.status, r.holdExpiresAt);
                 const badge = RESERVATION_STATUS_LABEL[eff] ?? RESERVATION_STATUS_LABEL.PENDING;
+                const pay = paymentStatus(
+                  paidByRes.get(r.id) ?? 0,
+                  r.totalPriceCents,
+                  eff,
+                );
                 return (
                   <tr
                     key={r.id}
                     className="border-b border-border last:border-0 hover:bg-foreground/[0.02]"
                   >
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 align-top">
                       <Link
                         href={`/admin/reservas/${r.id}`}
                         className="font-mono text-xs font-medium text-primary hover:underline"
@@ -147,16 +157,30 @@ export default async function ReservasPage({
                         </span>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3 text-foreground/80">{r.guestName}</td>
-                    <td className="px-4 py-3 text-foreground/70">
-                      {r.checkIn} → {r.checkOut}
+                    <td className="px-4 py-3 align-top">
+                      <span className="text-foreground/80">{r.guestName}</span>
+                      <span className="block text-xs text-foreground/50">
+                        {r.accommodationName}
+                      </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 align-top text-foreground/70">
+                      {r.checkIn} → {r.checkOut}
+                      <span className="block text-xs text-foreground/45">
+                        {perNightSummary(r.totalPriceCents, r.nights)} · até{" "}
+                        {r.accommodationCapacity} hóspedes
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 align-top">
                       <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.className}`}>
                         {badge.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-foreground/80">
+                    <td className="px-4 py-3 align-top">
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${pay.className}`}>
+                        {pay.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 align-top font-medium text-foreground/90">
                       {formatCentsBRL(r.totalPriceCents)}
                     </td>
                   </tr>

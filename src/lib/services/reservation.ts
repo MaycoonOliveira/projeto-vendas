@@ -312,7 +312,12 @@ export async function createReservation(
 /** Busca a reserva pelo `public_code` (consulta pública). `null` se não existir. */
 export async function getReservationByPublicCode(
   publicCode: string,
-): Promise<{ reservation: Reservation; guest: Guest; accommodationName: string } | null> {
+): Promise<{
+  reservation: Reservation;
+  guest: Guest;
+  accommodationName: string;
+  accommodationCapacity: number;
+} | null> {
   const [row] = await db
     .select()
     .from(reservation)
@@ -322,12 +327,17 @@ export async function getReservationByPublicCode(
 
   const [g] = await db.select().from(guest).where(eq(guest.id, row.guestId)).limit(1);
   const [acc] = await db
-    .select({ name: accommodation.name })
+    .select({ name: accommodation.name, capacity: accommodation.capacity })
     .from(accommodation)
     .where(eq(accommodation.id, row.accommodationId))
     .limit(1);
 
-  return { reservation: row, guest: g, accommodationName: acc?.name ?? "Acomodação" };
+  return {
+    reservation: row,
+    guest: g,
+    accommodationName: acc?.name ?? "Acomodação",
+    accommodationCapacity: acc?.capacity ?? row.guestsCount,
+  };
 }
 
 /** `true` se a reserva é um hold PENDING vencido (para exibição/expire-on-read na consulta). */

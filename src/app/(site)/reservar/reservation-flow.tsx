@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { formatCentsBRL } from "@/lib/utils";
+import { perNightSummary } from "@/lib/payment-status";
 import { AvailabilityCalendar } from "./availability-calendar";
 
 const inputBase =
@@ -377,7 +378,7 @@ export function ReservationFlow() {
                         {formatCentsBRL(r.price.totalCents)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {r.price.nights} noite{r.price.nights > 1 ? "s" : ""} · até{" "}
+                        {perNightSummary(r.price.totalCents, r.price.nights)} · até{" "}
                         {r.capacity} hóspedes
                       </p>
                     </div>
