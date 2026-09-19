@@ -56,6 +56,10 @@ export function NotificationBell() {
     // `load` só chama setState após o `await` (microtask), não de forma síncrona.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
+    // O polling do painel (FIX 4) avisa quando o nº de não lidas muda → recarrega o contador.
+    const onRefresh = () => load();
+    window.addEventListener("casa-notifications-refresh", onRefresh);
+    return () => window.removeEventListener("casa-notifications-refresh", onRefresh);
   }, []);
 
   // Fecha ao clicar fora ou pressionar Escape.

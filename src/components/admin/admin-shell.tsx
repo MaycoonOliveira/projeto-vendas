@@ -9,6 +9,7 @@ import { Menu, X } from "lucide-react";
 import { signOutAction } from "@/app/admin/actions";
 import { NotificationBell } from "@/components/admin/notification-bell";
 import { Toaster } from "@/components/admin/toaster";
+import { usePollUpdates } from "@/components/admin/use-poll-updates";
 import { cn } from "@/lib/utils";
 
 /**
@@ -36,6 +37,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [owner, setOwner] = useState(false);
+
+  // Polling leve de novidades (FIX 4) — toast ao chegar nova reserva enquanto a aba está aberta.
+  usePollUpdates();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

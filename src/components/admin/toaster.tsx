@@ -6,14 +6,19 @@ import { CheckCircle2, Info, X, XCircle } from "lucide-react";
 
 export type ToastTone = "success" | "error" | "info";
 
-type ToastItem = { id: number; text: string; tone: ToastTone };
+export type ToastAction = { label: string; onClick: () => void };
+type ToastItem = { id: number; text: string; tone: ToastTone; action?: ToastAction };
 
 const EVENT = "casa-toast";
 
-/** Dispara um toast de qualquer client component do admin. */
-export function toast(text: string, tone: ToastTone = "success") {
+/** Dispara um toast de qualquer client component do admin. `action` adiciona um botão (FIX 4). */
+export function toast(
+  text: string,
+  tone: ToastTone = "success",
+  action?: ToastAction,
+) {
   if (typeof window === "undefined") return;
-  window.dispatchEvent(new CustomEvent(EVENT, { detail: { text, tone } }));
+  window.dispatchEvent(new CustomEvent(EVENT, { detail: { text, tone, action } }));
 }
 
 /** Mensagens acionadas por redirecionamento de Server Action (`?flash=<chave>`). */
@@ -93,13 +98,18 @@ export function Toaster() {
 
   useEffect(() => {
     function onToast(e: Event) {
-      const detail = (e as CustomEvent<{ text: string; tone: ToastTone }>).detail;
+      const detail = (e as CustomEvent<{ text: string; tone: ToastTone; action?: ToastAction }>).detail;
       if (!detail?.text) return;
       const id = ++counter;
-      setItems((prev) => [...prev, { id, text: detail.text, tone: detail.tone ?? "success" }]);
-      window.setTimeout(() => {
-        setItems((prev) => prev.filter((t) => t.id !== id));
-      }, 4500);
+      setItems((prev) => [
+        ...prev,
+        { id, text: detail.text, tone: detail.tone ?? "success", action: detail.action },
+      ]);
+      // Toasts com ação (ex.: "Recarregar") ficam mais tempo na tela.
+      window.setTimeout(
+        () => setItems((prev) => prev.filter((t) => t.id !== id)),
+        detail.action ? 12000 : 4500,
+      );
     }
     window.addEventListener(EVENT, onToast);
     return () => window.removeEventListener(EVENT, onToast);
@@ -126,6 +136,18 @@ export function Toaster() {
             >
               <Icon className="mt-0.5 size-5 shrink-0" aria-hidden />
               <span className="flex-1">{t.text}</span>
+              {t.action ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    t.action?.onClick();
+                    setItems((prev) => prev.filter((x) => x.id !== t.id));
+                  }}
+                  className="shrink-0 rounded-lg bg-foreground/10 px-2.5 py-1 text-xs font-semibold hover:bg-foreground/15"
+                >
+                  {t.action.label}
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => setItems((prev) => prev.filter((x) => x.id !== t.id))}
