@@ -50,10 +50,21 @@ antecipada.
 
 ## 5. Retenção, expurgo e direitos do titular
 
-- **Retenção por finalidade** (reserva × pré-check-in podem ter prazos distintos): **definir prazos antes
-  do deploy de produção**. Rotina de **expurgo/anonimização** ao fim do prazo.
+- **Prazo de retenção (V1):** **60 meses (5 anos)** a partir do encerramento da estadia — alinhado a
+  prazos fiscais/contratuais comuns de hospedagem. ⚠️ Confirmar com o responsável pelos dados/jurídico
+  antes do PROD; o prazo é parametrizável (`--months` / `LGPD_RETENTION_MONTHS`).
+- **Rotina de anonimização** (`scripts/lgpd-retention.ts`, via `npm run lgpd:retention`):
+  - **Elegível:** hóspede **sem** reserva ativa/futura (`PENDING/CONFIRMED/CHECKED_IN`) e cuja última
+    saída (ou o cadastro, se nunca reservou) é anterior ao corte.
+  - **Ação:** anonimiza a PII em `guest` (nome → "Hóspede anonimizado", e-mail → `anon+<id>@anonimizado.invalid`,
+    telefone/observações/documento/nascimento removidos) e **apaga** as mensagens (`guest_message`);
+    a **reserva é preservada** (datas/valores/status — nunca apagada) e o evento vira `audit_log`
+    (`GUEST_ANONYMIZED`).
+  - **Segurança:** roda em **DRY-RUN por padrão** (só relata; `--apply` executa); cada hóspede em sua
+    própria transação. Agendável (Vercel Cron/manual) — sem dependência de cron para correção.
 - **Direitos do titular** (acesso, correção, exclusão, portabilidade, informação): processo documentado;
-  canal de contato do responsável pelos dados.
+  canal de contato do responsável pelos dados. A exclusão pontual usa a mesma anonimização (preserva o
+  registro fiscal da reserva, remove a PII).
 - **Consentimento**: aviso de privacidade (página existe). Se, no futuro, houver analytics/marketing,
   incluir **banner de consentimento** e atualizar esta política.
 
@@ -65,6 +76,7 @@ antecipada.
 
 ## 7. Pendências a resolver antes do PROD
 
-- [ ] Prazos de retenção por finalidade (reserva; pré-check-in).
+- [x] Prazos de retenção definidos (V1: 60 meses pós-estadia) + rotina de anonimização
+      (`scripts/lgpd-retention.ts`). Falta apenas a **confirmação jurídica** do prazo final.
 - [ ] Texto final da Política de Privacidade e do responsável pelos dados.
 - [ ] Confirmar exigências legais de hospedagem aplicáveis (define quando o pré-check-in é obrigatório).
