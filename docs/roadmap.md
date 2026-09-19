@@ -109,3 +109,45 @@ Objetivo: tornar o painel um **centro de operação** e destravar o uso no celul
 ### Dependências (resumo)
 `7 → 8 → {9, 10} → {16, 17}`, `17 → 19`, `8 → 11`, `{4,5,7} → 12`, Availability Engine B = V2,
 hardening/deploy (14) antes de produção real, pagamentos online (15) dependem de 8.3 + 10.
+
+---
+---
+
+## Fases de segurança & operação em produção (20–22)
+
+> Adicionadas após o bloco de correções + QA de Set/2026. Pré-requisito recomendado: Fase 14
+> concluída (rate-limit persistente, CSP, audit append-only, retenção LGPD já entregues).
+
+### Fase 20 — Pentest & Bug Bounty
+Teste de penetração formal **antes de abrir para volume real de reservas**.
+- **Escopo (OWASP Top 10):** Injection, Broken Authentication, XSS, CSRF, IDOR/BOLA, Security
+  Misconfiguration, Sensitive Data Exposure, XXE, Insecure Deserialization, Insufficient Logging.
+- **Casos específicos do sistema:**
+  - Força bruta em `/admin/login` (rate limit persistente já existe — **validar eficácia**).
+  - Manipulação de `public_code` e `idempotency_key`.
+  - IDOR em `/api/admin/*` (trocar IDs de reservas de terceiros).
+  - Upload malicioso (polyglot, path traversal no bucket, magic-bytes bypass).
+  - Headers de segurança via securityheaders.com.
+  - Dependências via `npm audit` + Snyk.
+- **Entregável:** relatório CVSS com criticidade por finding.
+- **Ferramentas:** OWASP ZAP (scan automatizado), Burp Suite Community (manual), nuclei.
+- **Responsável:** profissional externo OU serviço gerenciado (HackerOne, Cobalt).
+
+### Fase 21 — Observabilidade: Sentry + Uptime
+- **21.1 Sentry:** `@sentry/nextjs`; DSN via `SENTRY_DSN`; captura server-side (Route Handlers,
+  Server Actions, serviços) + client (Error Boundaries); breadcrumbs de ações admin (reserva
+  confirmada, pagamento lançado); **ignorar cold-start 57014** para não poluir alertas; alerta por
+  e-mail para P0 (exceções não tratadas em prod); source maps no build (sem expor ao browser).
+- **21.2 Uptime:** Betteruptime/UptimeRobot (free); monitorar `/api/health` a cada 1min e
+  `/api/health?deep=1` a cada 5min (valida DB); alerta (WhatsApp/e-mail) se downtime > 2min.
+- **21.3 Vercel Analytics:** Web Vitals; alvos LCP < 2,5s, FID < 100ms, CLS < 0,1.
+- **21.4 Logs estruturados:** todos os erros server-side com `console.error` + contexto JSON;
+  (V2, opcional) Vercel Log Drains → Axiom/Papertrail.
+
+### Fase 22 — Segurança contínua
+- **22.1 Dependabot:** ativar no GitHub (updates de deps com vulnerabilidade).
+- **22.2 SBOM:** `npm sbom` no CI.
+- **22.3 Secret scanning:** confirmar/expandir cobertura do gitleaks (já no CI).
+- **22.4 CSP Report-Only:** migrar a CSP para report-only com relatórios (Sentry/report-uri) para
+  capturar violações sem quebrar funcionalidades, antes de endurecer.
+- **22.5 2FA admin:** TOTP (plugin do Better Auth ou `speakeasy`), opt-in para contas OWNER.
