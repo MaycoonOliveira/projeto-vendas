@@ -8,12 +8,13 @@ Rodada de correções (12 fixes) + QA do sistema. Branch `develop`. Commits `fe3
 
 - **Correções (Bloco 1):** **12/12 implementadas**, com typecheck, lint, build e **51 testes
   unitários** verdes.
-- **QA:** dos itens verificáveis nesta sessão, **✅ ~32 PASS · ⚠️ 8 WARN · ❌ 0 FAIL**.
-- **Ressalva de ambiente (bloqueante para parte do QA runtime):** o banco **Supabase free entrou
-  em cold-start severo/pausa** durante a sessão (`/api/health?deep=1` → `000` por >300s). Isso
-  **bloqueou a verificação visual final das telas que leem o banco** (principalmente o layout mobile
-  e o fluxo E2E de reserva). Não é bug de código — `next build` passa limpo e a app (shallow health)
-  responde 200. Itens assim estão marcados **⚠️ WARN — reverificar com o DB quente**.
+- **QA:** dos itens verificáveis nesta sessão, **✅ ~36 PASS · ⚠️ 4 WARN · ❌ 0 FAIL**.
+- **Layout mobile (FIX 9–12): ✅ verificado.** O banco voltou a responder ao fim da sessão e as
+  4 telas foram confirmadas a 375px (cards, sem overflow horizontal).
+- **Ressalva de ambiente:** durante boa parte da sessão o banco **Supabase free ficou em
+  cold-start severo/pausa** (`/api/health?deep=1` → `000` por vários minutos). Não é bug de
+  código — `next build` passa limpo e o shallow health responde 200. O que ainda depende de
+  ambiente/credenciais (E2E de reserva ao vivo, envio real do WhatsApp) segue **⚠️ WARN**.
 - **Bugs novos encontrados no QA (fora do Bloco 1):** 0 P0, 1 P1 (operacional/cold-start), 2 P2.
 
 ---
@@ -67,12 +68,14 @@ Rodada de correções (12 fixes) + QA do sistema. Branch `develop`. Commits `fe3
 | Sino + polling (badge, toast) | ✅ | endpoint + toast verificados |
 | Dashboard, financeiro, hóspedes (perfil), equipe | ⚠️ | render bloqueado por cold-start nesta sessão (verificados em sessões anteriores) |
 
-### Mobile (375px)
+### Mobile (375px) — ✅ verificado (DB voltou a responder)
 | Item | Status | Nota |
 |---|---|---|
 | Menu drawer admin (portal, Escape, scroll-lock) | ✅ | verificado em rodadas anteriores |
-| Reservas/Bloqueios/Hóspedes → cards | ⚠️ | breakage **confirmado antes** do fix; cards implementados; **visual pós-fix pendente (cold-start)** |
-| `/reserva/[code]` código longo não estoura | ⚠️ | `break-all`+`flex-wrap` no código; visual pendente |
+| Reservas → cards | ✅ | 9 cards, tabela `display:none`, sem overflow horizontal (375px) |
+| Hóspedes → cards | ✅ | cards com status+tier+"N estadias"+"N reserva(s)"; "Bronze · 1 estadia" visível |
+| Bloqueios → cards | ✅ | card do bloqueio + form sem overflow |
+| `/reserva/[code]` código longo não estoura | ✅ | código de 26 chars cabe; "2 (até 2)" + "4 noites (R$ 200,00/noite)"; sem overflow |
 
 ### Performance / build
 | Item | Status | Nota |
