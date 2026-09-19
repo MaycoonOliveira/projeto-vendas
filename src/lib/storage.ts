@@ -81,17 +81,32 @@ async function ensureBucket(env: { url: string; key: string }): Promise<void> {
   }
 }
 
-export type UploadResult = { url: string } | { error: string };
+/** Código de falha do upload — o chamador mapeia para uma mensagem legível ao usuário. */
+export type UploadErrorCode =
+  | "not_configured"
+  | "empty"
+  | "too_large"
+  | "not_image"
+  | "upload_failed";
+export type UploadResult =
+  | { url: string }
+  | { error: string; code: UploadErrorCode };
 
 export async function uploadImage(file: File): Promise<UploadResult> {
   const env = storageEnv();
-  if (!env) return { error: "Armazenamento não configurado." };
-  if (!file || file.size === 0) return { error: "Arquivo vazio." };
-  if (file.size > MAX_BYTES) return { error: "Imagem acima de 6MB." };
+  if (!env)
+    return { error: "Armazenamento não configurado.", code: "not_configured" };
+  if (!file || file.size === 0) return { error: "Arquivo vazio.", code: "empty" };
+  if (file.size > MAX_BYTES)
+    return { error: "Imagem acima de 6MB.", code: "too_large" };
 
   const bytes = new Uint8Array(await file.arrayBuffer());
   const type = sniffImage(bytes);
-  if (!type) return { error: "Arquivo não é uma imagem válida (JPG, PNG, WEBP, AVIF ou GIF)." };
+  if (!type)
+    return {
+      error: "Arquivo não é uma imagem válida (JPG, PNG, WEBP, AVIF ou GIF).",
+      code: "not_image",
+    };
 
   await ensureBucket(env);
   const path = `${crypto.randomUUID()}.${EXT[type]}`;
@@ -107,7 +122,7 @@ export async function uploadImage(file: File): Promise<UploadResult> {
   });
   if (!res.ok) {
     console.error("[storage] upload falhou:", res.status, await res.text().catch(() => ""));
-    return { error: `Falha no upload (${res.status}).` };
+    return { error: `Falha no upload (${res.status}).`, code: "upload_failed" };
   }
   return { url: `${env.url}/storage/v1/object/public/${BUCKET}/${path}` };
 }

@@ -36,6 +36,19 @@ const FLASH_MESSAGES: Record<string, { text: string; tone: ToastTone }> = {
   photo_added: { text: "Foto adicionada.", tone: "success" },
   photo_deleted: { text: "Foto removida.", tone: "success" },
   photo_invalid: { text: "URL de imagem inválida (use http/https).", tone: "error" },
+  photo_too_large: { text: "Imagem acima de 6MB — reduza o arquivo.", tone: "error" },
+  photo_not_image: {
+    text: "Arquivo não é uma imagem válida (JPG, PNG, WEBP, AVIF ou GIF).",
+    tone: "error",
+  },
+  photo_storage: {
+    text: "Armazenamento de imagens indisponível. Use uma URL de imagem.",
+    tone: "error",
+  },
+  photo_upload_failed: {
+    text: "Falha ao enviar a imagem. Tente novamente.",
+    tone: "error",
+  },
   guest_saved: { text: "Dados do hóspede salvos.", tone: "success" },
   guest_status: { text: "Status do hóspede atualizado.", tone: "success" },
   role_saved: { text: "Papel atualizado.", tone: "success" },

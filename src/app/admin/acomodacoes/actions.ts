@@ -254,7 +254,17 @@ export async function addPhotoAction(formData: FormData): Promise<void> {
   if (file instanceof File && file.size > 0) {
     const up = await uploadImage(file);
     if ("error" in up) {
-      redirect(`/admin/acomodacoes/${accommodationId}?flash=photo_invalid`);
+      // Mensagem específica por causa (o toast genérico "URL inválida" confundia o usuário).
+      const flashByCode: Record<string, string> = {
+        not_configured: "photo_storage",
+        too_large: "photo_too_large",
+        not_image: "photo_not_image",
+        empty: "photo_invalid",
+        upload_failed: "photo_upload_failed",
+      };
+      redirect(
+        `/admin/acomodacoes/${accommodationId}?flash=${flashByCode[up.code] ?? "photo_upload_failed"}`,
+      );
     }
     url = up.url;
   }
