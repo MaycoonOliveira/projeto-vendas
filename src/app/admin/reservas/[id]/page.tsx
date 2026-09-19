@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AdminShell } from "@/components/admin/admin-shell";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { requireAdmin } from "@/lib/dal";
 import { todayInSaoPaulo } from "@/lib/dates";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
@@ -95,33 +96,33 @@ export default async function ReservaDetailPage({
           {eff === "PENDING" ? (
             <form action={confirmReservationAction}>
               <input type="hidden" name="id" value={r.id} />
-              <button className="rounded-full bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700">
+              <SubmitButton pendingLabel="Confirmando…" className="rounded-full bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700">
                 Confirmar
-              </button>
+              </SubmitButton>
             </form>
           ) : null}
           {eff === "CONFIRMED" ? (
             <>
               <form action={checkInReservationAction}>
                 <input type="hidden" name="id" value={r.id} />
-                <button className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                <SubmitButton className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
                   Fazer check-in
-                </button>
+                </SubmitButton>
               </form>
               <form action={noShowReservationAction}>
                 <input type="hidden" name="id" value={r.id} />
-                <button className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground/70 hover:bg-foreground/5">
+                <SubmitButton className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground/70 hover:bg-foreground/5">
                   Não compareceu
-                </button>
+                </SubmitButton>
               </form>
             </>
           ) : null}
           {eff === "CHECKED_IN" ? (
             <form action={checkOutReservationAction}>
               <input type="hidden" name="id" value={r.id} />
-              <button className="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+              <SubmitButton pendingLabel="Processando…" className="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                 Fazer check-out
-              </button>
+              </SubmitButton>
             </form>
           ) : null}
           {eff === "PENDING" || eff === "CONFIRMED" ? (
@@ -132,9 +133,9 @@ export default async function ReservaDetailPage({
                 placeholder="Motivo (opcional)"
                 className="h-9 rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary"
               />
-              <button className="rounded-full border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50">
+              <SubmitButton pendingLabel="Cancelando…" className="rounded-full border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50">
                 Cancelar reserva
-              </button>
+              </SubmitButton>
             </form>
           ) : null}
           {eff !== "PENDING" && eff !== "CONFIRMED" && eff !== "CHECKED_IN" ? (
@@ -173,9 +174,9 @@ export default async function ReservaDetailPage({
                 <form action={deletePaymentAction}>
                   <input type="hidden" name="id" value={p.id} />
                   <input type="hidden" name="reservationId" value={r.id} />
-                  <button className="rounded-full px-2 py-1 text-xs text-red-600 hover:bg-red-50" aria-label="Remover pagamento">
+                  <SubmitButton className="rounded-full px-2 py-1 text-xs text-red-600 hover:bg-red-50" aria-label="Remover pagamento">
                     Remover
-                  </button>
+                  </SubmitButton>
                 </form>
               </li>
             ))}
@@ -210,9 +211,9 @@ export default async function ReservaDetailPage({
             <label htmlFor="note" className="mb-1 block text-xs font-medium text-foreground/70">Observação (opcional)</label>
             <input id="note" name="note" className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25" />
           </div>
-          <button className="h-10 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
+          <SubmitButton pendingLabel="Registrando…" className="h-10 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
             Registrar
-          </button>
+          </SubmitButton>
         </form>
       </section>
 
@@ -232,9 +233,9 @@ export default async function ReservaDetailPage({
             className="w-full rounded-lg border border-foreground/15 bg-white px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
           />
           <div>
-            <button className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground/80 hover:bg-foreground/5">
+            <SubmitButton pendingLabel="Salvando…" className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground/80 hover:bg-foreground/5">
               Salvar nota
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </section>

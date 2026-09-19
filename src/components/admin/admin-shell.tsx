@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +10,7 @@ import { signOutAction } from "@/app/admin/actions";
 import { NotificationBell } from "@/components/admin/notification-bell";
 import { Toaster } from "@/components/admin/toaster";
 import { usePollUpdates } from "@/components/admin/use-poll-updates";
+import { RouteProgress } from "@/components/ui/route-progress";
 import { cn } from "@/lib/utils";
 
 /**
@@ -67,6 +68,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <Suspense fallback={null}>
+        <RouteProgress />
+      </Suspense>
       <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-6">
