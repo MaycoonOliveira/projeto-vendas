@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 import { toast } from "@/components/admin/toaster";
 
@@ -18,11 +19,14 @@ const INTERVAL_MS = 30_000;
 /**
  * Polling leve de novidades no painel (FIX 4). A cada 30s (só com a aba VISÍVEL), consulta
  * `/api/admin/poll-updates`. Se surgir uma reserva nova (contador subiu ou o id da última mudou),
- * dispara um toast com botão de recarregar. Também avisa o sino para atualizar o badge.
+ * ATUALIZA a tela SOZINHA via `router.refresh()` (soft refresh do Next: re-busca os dados do
+ * servidor e re-renderiza no lugar, SEM recarregar a página e sem perder rolagem/estado do
+ * formulário) e mostra um toast informando — o admin NÃO precisa dar reload. Também avisa o sino.
  *
  * Para o polling quando a aba vai para segundo plano (visibilitychange) e retoma ao voltar.
  */
 export function usePollUpdates() {
+  const router = useRouter();
   const last = useRef<Poll | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -42,9 +46,11 @@ export function usePollUpdates() {
             (data.lastReservationId !== null &&
               data.lastReservationId !== prev.lastReservationId);
           if (novaReserva) {
-            toast("Nova reserva recebida!", "info", {
-              label: "Recarregar",
-              onClick: () => window.location.reload(),
+            // Atualiza a tela ATUAL no lugar (dashboard, lista de reservas, etc.) sem reload.
+            router.refresh();
+            toast("Nova reserva recebida — tela atualizada.", "info", {
+              label: "Ver reservas",
+              onClick: () => router.push("/admin/reservas"),
             });
           }
           // Sino: se o nº de não lidas mudou, pede refresh do contador.
@@ -83,5 +89,5 @@ export function usePollUpdates() {
       stop();
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, []);
+  }, [router]);
 }
