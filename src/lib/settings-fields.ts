@@ -8,7 +8,7 @@
 export type SettingFieldType = "text" | "textarea" | "number" | "time";
 
 export type SettingSection = {
-  id: "pousada" | "operacao" | "financeiro" | "integracoes";
+  id: "pousada" | "operacao" | "financeiro" | "notificacoes" | "integracoes";
   label: string;
   description?: string;
 };
@@ -17,6 +17,12 @@ export const SETTING_SECTIONS: readonly SettingSection[] = [
   { id: "pousada", label: "Dados da pousada", description: "Identificação e contatos exibidos aos hóspedes." },
   { id: "operacao", label: "Operação", description: "Horários e regras da estadia." },
   { id: "financeiro", label: "Financeiro & Reservas", description: "Prazos, hold e taxas." },
+  {
+    id: "notificacoes",
+    label: "Notificações WhatsApp",
+    description:
+      "Aviso automático ao admin a cada nova reserva (Z-API). Deixe em branco para desativar.",
+  },
   { id: "integracoes", label: "Integrações", description: "Sincronização de calendários (em breve)." },
 ] as const;
 
@@ -52,6 +58,11 @@ export const SETTING_FIELDS: readonly SettingField[] = [
   { key: "payment_deadline", label: "Prazo de pagamento", type: "text", section: "financeiro", placeholder: "Em até 48h após a confirmação" },
   { key: "extra_fees", label: "Taxas extras", type: "textarea", section: "financeiro", placeholder: "Taxa de limpeza, hóspede extra…" },
   { key: "cancellation_policy", label: "Política de cancelamento", type: "textarea", section: "financeiro" },
+
+  // Notificações WhatsApp (Z-API). Secrets também podem vir de env (ZAPI_*), que têm precedência.
+  { key: "zapi_instance_id", label: "Instância Z-API", type: "text", section: "notificacoes", placeholder: "3ABC…", help: "ID da instância no painel da Z-API." },
+  { key: "zapi_token", label: "Token Z-API", type: "text", section: "notificacoes", help: "Segredo da instância. Em produção, prefira a variável de ambiente ZAPI_TOKEN." },
+  { key: "whatsapp_notify_phone", label: "Telefone destino", type: "text", section: "notificacoes", placeholder: "+55 24 99999-9999", help: "Número que recebe o aviso de nova reserva (com DDI)." },
 ] as const;
 
 export type SettingKey = (typeof SETTING_FIELDS)[number]["key"];

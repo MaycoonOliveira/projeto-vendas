@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { eq, sql, type InferSelectModel } from "drizzle-orm";
 
 import { db } from "@/db";
@@ -13,6 +14,11 @@ import {
 import { calculatePrice } from "@/lib/pricing";
 import { generatePublicCode } from "@/lib/reservation-code";
 import { createNotification } from "@/lib/services/notification";
+import {
+  newReservationMessage,
+  sendWhatsAppToAdmin,
+} from "@/lib/whatsapp-notify";
+import { formatCentsBRL } from "@/lib/utils";
 
 export type Reservation = InferSelectModel<typeof reservation>;
 export type Guest = InferSelectModel<typeof guest>;
@@ -285,6 +291,28 @@ export async function createReservation(
         entityType: "reservation",
         entityId: result.reservation.id,
         link: `/admin/reservas/${result.reservation.id}`,
+      });
+
+      // WhatsApp ao admin — FIRE-AND-FORGET via `after()` (roda após a resposta ao hóspede,
+      // sem adicionar latência; best-effort, nunca derruba a reserva). FIX 3.
+      const r = result.reservation;
+      after(async () => {
+        const [acc] = await db
+          .select({ name: accommodation.name })
+          .from(accommodation)
+          .where(eq(accommodation.id, r.accommodationId))
+          .limit(1);
+        await sendWhatsAppToAdmin(
+          newReservationMessage({
+            publicCode: r.publicCode,
+            accommodationName: acc?.name ?? "Acomodação",
+            checkIn: r.checkIn,
+            checkOut: r.checkOut,
+            nights: r.nights,
+            guestsCount: r.guestsCount,
+            totalBRL: formatCentsBRL(r.totalPriceCents),
+          }),
+        );
       });
     }
 
