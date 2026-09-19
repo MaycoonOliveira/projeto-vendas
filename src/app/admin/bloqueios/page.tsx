@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AdminShell } from "@/components/admin/admin-shell";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { requireAdmin } from "@/lib/dal";
 import { listAccommodations } from "@/lib/services/accommodation";
 import { listBlocks } from "@/lib/services/block";
@@ -34,7 +35,34 @@ export default async function BloqueiosPage() {
       </div>
 
       {blocks.length > 0 ? (
-        <div className="mt-5 overflow-hidden rounded-xl border border-border bg-white">
+        <>
+        {/* Mobile: cards */}
+        <ul className="mt-5 space-y-3 md:hidden">
+          {blocks.map((b) => (
+            <li key={b.id} className="rounded-xl border border-border bg-white p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground/90">{b.accommodationName}</p>
+                  <p className="mt-0.5 text-sm text-foreground/70">
+                    {b.startDate} → {b.endDate}
+                  </p>
+                  {b.reason ? (
+                    <p className="mt-0.5 text-xs text-foreground/50">{b.reason}</p>
+                  ) : null}
+                </div>
+                <form action={deleteBlockAction}>
+                  <input type="hidden" name="id" value={b.id} />
+                  <SubmitButton className="text-sm text-red-600 hover:underline">
+                    Remover
+                  </SubmitButton>
+                </form>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop: tabela */}
+        <div className="mt-5 hidden overflow-x-auto rounded-xl border border-border bg-white md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-foreground/50">
@@ -55,7 +83,9 @@ export default async function BloqueiosPage() {
                   <td className="px-4 py-3 text-right">
                     <form action={deleteBlockAction}>
                       <input type="hidden" name="id" value={b.id} />
-                      <button className="text-sm text-red-600 hover:underline">Remover</button>
+                      <SubmitButton className="text-sm text-red-600 hover:underline">
+                        Remover
+                      </SubmitButton>
                     </form>
                   </td>
                 </tr>
@@ -63,6 +93,7 @@ export default async function BloqueiosPage() {
             </tbody>
           </table>
         </div>
+        </>
       ) : (
         <p className="mt-5 text-sm text-foreground/50">Nenhum bloqueio cadastrado.</p>
       )}

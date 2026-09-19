@@ -55,12 +55,12 @@ export default async function ReservaPage({
       <section className="py-14 sm:py-18">
         <Container>
           <div className="mx-auto max-w-xl rounded-2xl border border-border bg-surface p-7 shadow-[var(--shadow-soft)]">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-lg font-semibold tracking-wider text-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="break-all font-mono text-base font-semibold tracking-wider text-foreground sm:text-lg">
                 {r.publicCode}
               </span>
               <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${badge.className}`}
+                className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${badge.className}`}
               >
                 {badge.label}
               </span>

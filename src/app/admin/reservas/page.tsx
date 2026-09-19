@@ -118,7 +118,59 @@ export default async function ReservasPage({
       {reservations.length === 0 ? (
         <p className="mt-8 text-sm text-foreground/50">Nenhuma reserva encontrada.</p>
       ) : (
-        <div className="mt-5 overflow-x-auto rounded-xl border border-border bg-white">
+        <>
+        {/* Mobile: cards empilhados (a tabela abaixo é md+). */}
+        <ul className="mt-5 space-y-3 md:hidden">
+          {reservations.map((r) => {
+            const eff = effectiveStatus(r.status, r.holdExpiresAt);
+            const badge = RESERVATION_STATUS_LABEL[eff] ?? RESERVATION_STATUS_LABEL.PENDING;
+            const pay = paymentStatus(paidByRes.get(r.id) ?? 0, r.totalPriceCents, eff);
+            return (
+              <li key={r.id} className="rounded-xl border border-border bg-white p-4">
+                <Link
+                  href={`/admin/reservas/${r.id}`}
+                  className="flex items-start justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <span className="font-medium text-foreground/90">{r.guestName}</span>
+                    <span className="block text-xs text-foreground/50">{r.accommodationName}</span>
+                  </div>
+                  <span className="font-semibold text-foreground/90">
+                    {formatCentsBRL(r.totalPriceCents)}
+                  </span>
+                </Link>
+                <p className="mt-2 text-sm text-foreground/70">
+                  {r.checkIn} → {r.checkOut}
+                </p>
+                <p className="text-xs text-foreground/45">
+                  {perNightSummary(r.totalPriceCents, r.nights)} · até {r.accommodationCapacity} hóspedes
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.className}`}>
+                    {badge.label}
+                  </span>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${pay.className}`}>
+                    {pay.label}
+                  </span>
+                  {r.source === "MANUAL" ? (
+                    <span className="rounded bg-foreground/5 px-1.5 py-0.5 text-[10px] text-foreground/50">
+                      manual
+                    </span>
+                  ) : null}
+                  <Link
+                    href={`/admin/reservas/${r.id}`}
+                    className="ml-auto font-mono text-[11px] text-primary hover:underline"
+                  >
+                    {r.publicCode}
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Desktop: tabela (md+). */}
+        <div className="mt-5 hidden overflow-x-auto rounded-xl border border-border bg-white md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-foreground/50">
@@ -189,6 +241,7 @@ export default async function ReservasPage({
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {total > pageSize ? (

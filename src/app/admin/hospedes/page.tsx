@@ -47,7 +47,40 @@ export default async function HospedesPage({
           {q ? "Nenhum hóspede encontrado." : "Nenhum hóspede cadastrado ainda."}
         </p>
       ) : (
-        <div className="mt-5 overflow-x-auto rounded-xl border border-border bg-white">
+        <>
+        {/* Mobile: cards */}
+        <ul className="mt-5 space-y-3 md:hidden">
+          {guests.map((g) => {
+            const badge = STATUS_BADGE[g.status] ?? STATUS_BADGE.NORMAL;
+            const t = loyaltyTier(g.stays);
+            return (
+              <li key={g.id} className="rounded-xl border border-border bg-white p-4">
+                <Link href={`/admin/hospedes/${g.id}`} className="block">
+                  <span className="font-medium text-foreground/90">{g.fullName}</span>
+                  <span className="mt-0.5 block truncate text-sm text-foreground/60">{g.email}</span>
+                  <span className="block text-xs text-foreground/45">{g.phone}</span>
+                </Link>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.className}`}>
+                    {badge.label}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5" title={TIER_TOOLTIP}>
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${t.className}`}>
+                      {t.label}
+                    </span>
+                    <span className="text-xs text-foreground/45">{staysLabel(g.stays)}</span>
+                  </span>
+                  <span className="ml-auto text-xs text-foreground/50">
+                    {g.reservations} reserva(s)
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Desktop: tabela */}
+        <div className="mt-5 hidden overflow-x-auto rounded-xl border border-border bg-white md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-foreground/50">
@@ -104,6 +137,7 @@ export default async function HospedesPage({
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {guests.length > 0 ? (
