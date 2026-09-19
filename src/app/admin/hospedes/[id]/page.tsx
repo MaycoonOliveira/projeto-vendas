@@ -7,7 +7,7 @@ import { requireAdmin } from "@/lib/dal";
 import { getGuestProfile } from "@/lib/services/guest";
 import { GUEST_STATUSES } from "@/db/schema";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
-import { staysToNextTier } from "@/lib/loyalty";
+import { staysToNextTier, TIER_TOOLTIP } from "@/lib/loyalty";
 import { formatCentsBRL } from "@/lib/utils";
 import { addGuestMessageAction, setGuestStatusAction, updateGuestCrmAction } from "../actions";
 
@@ -51,7 +51,10 @@ export default async function GuestProfilePage({
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusBadge.className}`}>
           {statusBadge.label}
         </span>
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${tier.className}`}>
+        <span
+          title={TIER_TOOLTIP}
+          className={`rounded-full px-3 py-1 text-xs font-medium ${tier.className}`}
+        >
           {tier.label}
         </span>
       </div>

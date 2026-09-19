@@ -4,7 +4,7 @@ import Link from "next/link";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/lib/dal";
 import { listGuestsCrm } from "@/lib/services/guest";
-import { loyaltyTier } from "@/lib/loyalty";
+import { loyaltyTier, staysLabel, TIER_LEGEND, TIER_TOOLTIP } from "@/lib/loyalty";
 
 export const metadata: Metadata = { title: "Hóspedes" };
 
@@ -78,8 +78,16 @@ export default async function HospedesPage({
                       {(() => {
                         const t = loyaltyTier(g.stays);
                         return (
-                          <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${t.className}`}>
-                            {t.label}
+                          <span
+                            className="inline-flex items-center gap-1.5"
+                            title={TIER_TOOLTIP}
+                          >
+                            <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${t.className}`}>
+                              {t.label}
+                            </span>
+                            <span className="text-xs text-foreground/45">
+                              {staysLabel(g.stays)}
+                            </span>
                           </span>
                         );
                       })()}
@@ -97,6 +105,10 @@ export default async function HospedesPage({
           </table>
         </div>
       )}
+
+      {guests.length > 0 ? (
+        <p className="mt-3 text-xs text-foreground/45">{TIER_LEGEND}</p>
+      ) : null}
     </AdminShell>
   );
 }
