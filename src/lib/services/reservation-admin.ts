@@ -41,8 +41,26 @@ const TRANSITIONS: Record<ReservationStatus, ReservationStatus[]> = {
   NO_SHOW: [],
 };
 
-/** Estados que liberam o inventário ao serem atingidos (occupancy.active = false). */
-const FREEING = new Set<ReservationStatus>(["CANCELLED", "EXPIRED"]);
+/**
+ * Estados que LIBERAM o inventário ao serem atingidos (occupancy.active = false).
+ *
+ * Fluxo de liberação de datas (FIX 7):
+ * - O ledger `occupancy` mantém `during = [check_in, check_out)` com `active=true` enquanto a
+ *   reserva ocupa o quarto. A EXCLUDE constraint só considera linhas `active` → desativar libera
+ *   as datas para novas reservas.
+ * - Estados que HOLD inventário: PENDING, CONFIRMED, CHECKED_IN (hóspede ainda no quarto).
+ * - Estados que LIBERAM (aqui): CANCELLED, EXPIRED (nunca ocuparam) e, ao ENCERRAR a estadia,
+ *   CHECKED_OUT, COMPLETED e NO_SHOW. Em check-out no prazo as datas já são passadas (sem efeito),
+ *   mas em CHECK-OUT ANTECIPADO isto libera as noites restantes imediatamente para revenda.
+ *   NO_SHOW libera as datas do hóspede que não apareceu.
+ */
+const FREEING = new Set<ReservationStatus>([
+  "CANCELLED",
+  "EXPIRED",
+  "CHECKED_OUT",
+  "COMPLETED",
+  "NO_SHOW",
+]);
 
 export function canTransition(
   from: ReservationStatus,
