@@ -16,6 +16,9 @@ const eslintConfig = defineConfig([
     "playwright-report/**",
     "test-results/**",
     "coverage/**",
+    // Scripts de teste de carga: rodam no binário k6 (globals __ENV/__VU, módulos k6/*),
+    // não fazem parte do lint da aplicação.
+    "tests/load/**",
   ]),
 ]);
 
