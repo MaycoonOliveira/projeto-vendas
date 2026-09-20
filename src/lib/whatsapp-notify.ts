@@ -8,8 +8,8 @@ import { getSettingsMap } from "@/lib/services/setting";
  * Config (settings da pousada OU variáveis de ambiente; env tem precedência p/ os segredos):
  *   - Instância:  setting `zapi_instance_id`  | env `ZAPI_INSTANCE_ID`
  *   - Token:      setting `zapi_token`         | env `ZAPI_TOKEN`
- *   - Telefone:   setting `whatsapp_notify_phone` | env `ZAPI_PHONE`  (com DDI, ex.: +55 24 9…)
- *   - (opcional)  env `ZAPI_CLIENT_TOKEN` — "Account Security Token" da Z-API (header Client-Token).
+ *   - Telefone:   setting `whatsapp_notify_phone` (fallback: `contact_whatsapp`) | env `ZAPI_PHONE`
+ *   - (opcional)  "Account Security Token" (header Client-Token): setting `zapi_client_token` | env `ZAPI_CLIENT_TOKEN`
  *
  * BEST-EFFORT: se não estiver configurado, loga um aviso e retorna SEM lançar — nunca bloqueia a
  * reserva do hóspede. Erros de rede/HTTP são engolidos (apenas logados).
@@ -36,13 +36,19 @@ async function resolveConfig(): Promise<ZapiConfig | null> {
     ""
   ).trim();
   const token = (process.env.ZAPI_TOKEN ?? settings.zapi_token ?? "").trim();
+  // Destino: env > "Telefone destino" > "WhatsApp de contato" (fallback pedido pelo usuário).
   const phoneRaw = (
     process.env.ZAPI_PHONE ??
     settings.whatsapp_notify_phone ??
+    settings.contact_whatsapp ??
     ""
   ).trim();
   const phone = onlyDigits(phoneRaw);
-  const clientToken = process.env.ZAPI_CLIENT_TOKEN?.trim() || undefined;
+  // Client-Token (Account Security): env tem precedência; senão, o valor salvo no painel.
+  const clientToken =
+    process.env.ZAPI_CLIENT_TOKEN?.trim() ||
+    settings.zapi_client_token?.trim() ||
+    undefined;
 
   if (!instanceId || !token || !phone) return null;
   return { instanceId, token, phone, clientToken };

@@ -62,7 +62,8 @@ export const SETTING_FIELDS: readonly SettingField[] = [
   // Notificações WhatsApp (Z-API). Secrets também podem vir de env (ZAPI_*), que têm precedência.
   { key: "zapi_instance_id", label: "Instância Z-API", type: "text", section: "notificacoes", placeholder: "3ABC…", help: "ID da instância no painel da Z-API." },
   { key: "zapi_token", label: "Token Z-API", type: "text", section: "notificacoes", help: "Segredo da instância. Em produção, prefira a variável de ambiente ZAPI_TOKEN." },
-  { key: "whatsapp_notify_phone", label: "Telefone destino", type: "text", section: "notificacoes", placeholder: "+55 24 99999-9999", help: "Número que recebe o aviso de nova reserva (com DDI)." },
+  { key: "zapi_client_token", label: "Client-Token (Account Security)", type: "text", section: "notificacoes", help: "Só se a conta Z-API estiver com \"Account Security\" ligado. É o \"Token de segurança da conta\" (menu Segurança). Em produção, prefira a variável de ambiente ZAPI_CLIENT_TOKEN." },
+  { key: "whatsapp_notify_phone", label: "Telefone destino", type: "text", section: "notificacoes", placeholder: "+55 24 99999-9999", help: "Número que recebe o aviso de nova reserva (com DDI). Se em branco, usa o \"WhatsApp de contato\" da aba Dados da pousada." },
 ] as const;
 
 export type SettingKey = (typeof SETTING_FIELDS)[number]["key"];
