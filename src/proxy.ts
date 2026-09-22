@@ -49,7 +49,9 @@ const MARKETING_CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  // `*.supabase.co`: fotos das acomodações servidas pelo Supabase Storage (bucket público).
+  // Só imagens (não executam) — o host do projeto é derivado da chave, por isso o wildcard.
+  "img-src 'self' data: blob: https://*.supabase.co",
   "font-src 'self'",
   "connect-src 'self'",
   "frame-src https://www.google.com",
@@ -89,7 +91,8 @@ export function proxy(request: NextRequest): NextResponse {
         "default-src 'self'",
         `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
         `style-src 'self' 'nonce-${nonce}'`,
-        "img-src 'self' blob: data:",
+        // `*.supabase.co`: fotos das acomodações (Supabase Storage, bucket público) na galeria admin.
+        "img-src 'self' blob: data: https://*.supabase.co",
         "font-src 'self'",
         "connect-src 'self'",
         "object-src 'none'",
