@@ -8,6 +8,7 @@ import { requireAdmin } from "@/lib/dal";
 import { todayInSaoPaulo } from "@/lib/dates";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
 import { getReservationAdmin } from "@/lib/services/reservation-admin";
+import { listPhotos } from "@/lib/services/accommodation-photo";
 import { PAYMENT_METHOD_LABEL } from "@/lib/services/payment";
 import { formatCentsBRL } from "@/lib/utils";
 import {
@@ -36,6 +37,8 @@ export default async function ReservaDetailPage({
   if (!data) notFound();
 
   const { reservation: r, guest, accommodation, history, payments, paidCents } = data;
+  const photos = accommodation ? await listPhotos(accommodation.id) : [];
+  const cover = photos[0];
   const eff = effectiveStatus(r.status, r.holdExpiresAt);
   const badge = RESERVATION_STATUS_LABEL[eff] ?? RESERVATION_STATUS_LABEL.PENDING;
   const editable = eff === "PENDING" || eff === "CONFIRMED";
@@ -64,6 +67,15 @@ export default async function ReservaDetailPage({
         {/* Reserva */}
         <section className="rounded-xl border border-border bg-white p-5">
           <h2 className="text-sm font-semibold text-foreground">Reserva</h2>
+          {cover ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={cover.url}
+              alt={cover.alt ?? accommodation?.name ?? "Acomodação"}
+              loading="lazy"
+              className="mt-3 aspect-[16/9] w-full rounded-lg border border-border object-cover"
+            />
+          ) : null}
           <dl className="mt-3 grid gap-2 text-sm">
             <Row label="Acomodação" value={accommodation?.name ?? "—"} />
             <Row label="Período" value={`${r.checkIn} → ${r.checkOut} (${r.nights} noite${r.nights > 1 ? "s" : ""})`} />

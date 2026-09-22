@@ -12,13 +12,13 @@ import { listPhotos } from "@/lib/services/accommodation-photo";
 import { formatCentsBRL } from "@/lib/utils";
 import { AccommodationForm } from "../accommodation-form";
 import {
-  addPhotoAction,
   deleteAccommodationAction,
   deleteOverrideAction,
   deletePhotoAction,
   updateAccommodationAction,
 } from "../actions";
 import { OverrideForm } from "../override-form";
+import { PhotoUploader } from "../photo-uploader";
 
 export const metadata: Metadata = { title: "Editar acomodação" };
 
@@ -79,59 +79,17 @@ export default async function EditAccommodationPage({
       <section className="mt-12">
         <h2 className="font-serif text-xl font-semibold text-foreground">Fotos</h2>
         <p className="mt-1 text-sm text-foreground/60">
-          Aparecem no site público, na busca de disponibilidade. Envie um arquivo (JPG, PNG, WEBP
-          ou AVIF, até 6MB) ou, alternativamente, informe a URL de uma imagem.
+          Aparecem no site público e na busca de disponibilidade. Escolha uma ou mais imagens
+          (JPG, PNG, WEBP, AVIF ou GIF, até 6MB cada), confira a prévia e clique em enviar.
         </p>
 
-        <form
-          action={addPhotoAction}
-          className="mt-4 grid gap-3 rounded-xl border border-border bg-white p-4"
-        >
-          <input type="hidden" name="accommodationId" value={accommodation.id} />
-          <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr] sm:items-end">
-            <div>
-              <label htmlFor="file" className="mb-1 block text-xs font-medium text-foreground/70">
-                Arquivo de imagem
-              </label>
-              <input
-                id="file"
-                name="file"
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
-                className="block w-full text-sm text-foreground/70 file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary-hover"
-              />
-            </div>
-            <div>
-              <label htmlFor="alt" className="mb-1 block text-xs font-medium text-foreground/70">
-                Descrição (alt)
-              </label>
-              <input
-                id="alt"
-                name="alt"
-                placeholder="Suíte com vista"
-                className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
-              />
-            </div>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-            <div>
-              <label htmlFor="url" className="mb-1 block text-xs font-medium text-foreground/70">
-                …ou URL da imagem (opcional)
-              </label>
-              <input
-                id="url"
-                name="url"
-                type="url"
-                placeholder="https://…/foto.jpg"
-                className="h-10 w-full rounded-lg border border-foreground/15 bg-white px-3 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25"
-              />
-            </div>
-            <button className="h-10 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
-              Adicionar
-            </button>
-          </div>
-        </form>
+        <PhotoUploader accommodationId={accommodation.id} />
 
+        {photos.length > 0 ? (
+          <h3 className="mt-6 text-sm font-medium text-foreground/70">
+            Fotos cadastradas ({photos.length})
+          </h3>
+        ) : null}
         {photos.length > 0 ? (
           <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {photos.map((p) => (

@@ -240,41 +240,55 @@ export async function deleteOverrideAction(formData: FormData): Promise<void> {
   if (accommodationId) revalidatePath(`/admin/acomodacoes/${accommodationId}`);
 }
 
-/** Registra uma foto na acomodação: upload de arquivo (Fase 18) ou, alternativamente, por URL. */
-export async function addPhotoAction(formData: FormData): Promise<void> {
+/**
+ * Registra UMA OU MAIS fotos (upload de arquivos) na acomodação — Fase 18.
+ * Faz upload de cada arquivo para o Supabase Storage e grava a foto. Sem opção por URL.
+ */
+export async function addPhotosAction(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   const accommodationId = String(formData.get("accommodationId") ?? "");
-  const alt = String(formData.get("alt") ?? "").trim() || null;
   if (!accommodationId) redirect("/admin/acomodacoes");
 
-  const file = formData.get("file");
-  let url = String(formData.get("url") ?? "").trim();
+  const files = formData
+    .getAll("file")
+    .filter((f): f is File => f instanceof File && f.size > 0);
 
-  // Prioriza o arquivo enviado; faz upload para o Supabase Storage.
-  if (file instanceof File && file.size > 0) {
-    const up = await uploadImage(file);
-    if ("error" in up) {
-      // Mensagem específica por causa (o toast genérico "URL inválida" confundia o usuário).
-      const flashByCode: Record<string, string> = {
-        not_configured: "photo_storage",
-        too_large: "photo_too_large",
-        not_image: "photo_not_image",
-        empty: "photo_invalid",
-        upload_failed: "photo_upload_failed",
-      };
-      redirect(
-        `/admin/acomodacoes/${accommodationId}?flash=${flashByCode[up.code] ?? "photo_upload_failed"}`,
-      );
-    }
-    url = up.url;
+  if (files.length === 0) {
+    redirect(`/admin/acomodacoes/${accommodationId}?flash=photo_invalid`);
   }
 
-  if (!url) redirect(`/admin/acomodacoes/${accommodationId}?flash=photo_invalid`);
+  // Mapeia a causa da falha do upload para uma mensagem específica (toast).
+  const flashByCode: Record<string, string> = {
+    not_configured: "photo_storage",
+    too_large: "photo_too_large",
+    not_image: "photo_not_image",
+    empty: "photo_invalid",
+    upload_failed: "photo_upload_failed",
+  };
 
-  const created = await addPhoto({ accommodationId, url, alt, adminId: admin.userId });
+  let added = 0;
+  let lastErrorFlash: string | null = null;
+  for (const file of files) {
+    const up = await uploadImage(file);
+    if ("error" in up) {
+      lastErrorFlash = flashByCode[up.code] ?? "photo_upload_failed";
+      continue;
+    }
+    const created = await addPhoto({
+      accommodationId,
+      url: up.url,
+      alt: null,
+      adminId: admin.userId,
+    });
+    if (created) added += 1;
+  }
+
   revalidatePath(`/admin/acomodacoes/${accommodationId}`);
   revalidatePath("/acomodacoes");
-  redirect(`/admin/acomodacoes/${accommodationId}?flash=${created ? "photo_added" : "photo_invalid"}`);
+
+  // Sucesso se ao menos uma entrou; senão, a última causa de falha.
+  const flash = added > 0 ? "photo_added" : lastErrorFlash ?? "photo_upload_failed";
+  redirect(`/admin/acomodacoes/${accommodationId}?flash=${flash}`);
 }
 
 export async function deletePhotoAction(formData: FormData): Promise<void> {
