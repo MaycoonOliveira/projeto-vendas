@@ -1,4 +1,3 @@
-import { after } from "next/server";
 import { eq, sql, type InferSelectModel } from "drizzle-orm";
 
 import { db } from "@/db";
@@ -293,10 +292,11 @@ export async function createReservation(
         link: `/admin/reservas/${result.reservation.id}`,
       });
 
-      // WhatsApp ao admin — FIRE-AND-FORGET via `after()` (roda após a resposta ao hóspede,
-      // sem adicionar latência; best-effort, nunca derruba a reserva). FIX 3.
+      // WhatsApp ao admin (FIX 3). INLINE e best-effort: aguardamos o envio (com timeout de 8s
+      // dentro do sendWhatsAppToAdmin) e engolimos qualquer erro — assim SEMPRE roda e registra
+      // falha, sem depender do flush do `after()`. Consistente com o e-mail, que também é inline.
       const r = result.reservation;
-      after(async () => {
+      try {
         const [acc] = await db
           .select({ name: accommodation.name })
           .from(accommodation)
@@ -313,7 +313,9 @@ export async function createReservation(
             totalBRL: formatCentsBRL(r.totalPriceCents),
           }),
         );
-      });
+      } catch (notifyError) {
+        console.error("[reservas] falha ao notificar WhatsApp:", notifyError);
+      }
     }
 
     return result;

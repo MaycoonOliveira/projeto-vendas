@@ -64,6 +64,9 @@ export async function sendWhatsAppToAdmin(message: string): Promise<boolean> {
     return false;
   }
   const url = `https://api.z-api.io/instances/${cfg.instanceId}/token/${cfg.token}/send-text`;
+  // Timeout defensivo: um Z-API lento não pode segurar a resposta ao hóspede.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
   try {
     const res = await fetch(url, {
       method: "POST",
@@ -72,13 +75,12 @@ export async function sendWhatsAppToAdmin(message: string): Promise<boolean> {
         ...(cfg.clientToken ? { "Client-Token": cfg.clientToken } : {}),
       },
       body: JSON.stringify({ phone: cfg.phone, message }),
+      signal: controller.signal,
     });
-    if (!res.ok) {
-      console.error(
-        "[whatsapp-notify] envio falhou:",
-        res.status,
-        await res.text().catch(() => ""),
-      );
+    const bodyText = await res.text().catch(() => "");
+    // A Z-API pode responder 200 com um corpo de erro (ex.: instância/token inválidos).
+    if (!res.ok || /"error"/i.test(bodyText)) {
+      console.error("[whatsapp-notify] envio falhou:", res.status, bodyText.slice(0, 300));
       return false;
     }
     return true;
@@ -88,6 +90,8 @@ export async function sendWhatsAppToAdmin(message: string): Promise<boolean> {
       e instanceof Error ? e.message : e,
     );
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
