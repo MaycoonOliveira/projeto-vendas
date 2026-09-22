@@ -8,12 +8,35 @@ import "server-only";
 const BUCKET = "accommodation-photos";
 const MAX_BYTES = 6 * 1024 * 1024; // 6MB
 
-/** URL do projeto Supabase. Usa SUPABASE_URL se for uma URL http(s); senão deriva do
- *  usuário do pooler (`postgres.<ref>`) em DATABASE_URL/DIRECT_URL → `https://<ref>.supabase.co`.
- *  (Torna o upload resiliente a um SUPABASE_URL preenchido com a chave por engano.) */
+/** Ref do projeto contido no claim `ref` do JWT `SERVICE_ROLE_KEY` (payload público, não a
+ *  assinatura). É a fonte de verdade: o host de storage TEM que ser o projeto para o qual a chave
+ *  foi assinada — senão o Supabase rejeita com "signature verification failed" (AccessDenied). */
+function refFromServiceKey(key: string | undefined): string | null {
+  if (!key) return null;
+  const parts = key.split(".");
+  if (parts.length !== 3) return null; // não é JWT (ex.: nova chave "secret"/publishable)
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+    return typeof payload.ref === "string" && /^[a-z0-9]+$/i.test(payload.ref)
+      ? payload.ref
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** URL do projeto Supabase para o Storage.
+ *  Prioridade: (1) o **ref da própria SERVICE_ROLE_KEY** — garante que a URL casa com a chave e
+ *  evita "signature verification failed" quando SUPABASE_URL aponta para OUTRO projeto; (2) um
+ *  SUPABASE_URL http(s) explícito; (3) o ref do usuário do pooler (`postgres.<ref>`) em
+ *  DATABASE_URL/DIRECT_URL. */
 function resolveProjectUrl(): string | null {
+  const keyRef = refFromServiceKey(process.env.SERVICE_ROLE_KEY);
+  if (keyRef) return `https://${keyRef}.supabase.co`;
+
   const raw = process.env.SUPABASE_URL?.trim();
   if (raw && /^https?:\/\//i.test(raw)) return raw.replace(/\/+$/, "");
+
   const conn = process.env.DATABASE_URL ?? process.env.DIRECT_URL ?? "";
   try {
     const username = decodeURIComponent(new URL(conn).username);

@@ -1,24 +1,40 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { CheckCircle2, Info, X, XCircle } from "lucide-react";
 
 export type ToastTone = "success" | "error" | "info";
 
 export type ToastAction = { label: string; onClick: () => void };
 type ToastItem = { id: number; text: string; tone: ToastTone; action?: ToastAction };
+type PendingToast = { text: string; tone: ToastTone; action?: ToastAction };
 
-const EVENT = "casa-toast";
+/**
+ * Canal de toasts em nível de MÓDULO (não via evento de `window`).
+ *
+ * Motivo: o antigo `window.dispatchEvent` dependia de o `Toaster` já ter registrado o listener.
+ * Como o `Toaster` é montado por-página (dentro do `AdminShell`) e há `loading.tsx` no /admin, a
+ * árvore remonta a cada navegação — e um toast disparado por `?flash=` (logo após um redirect de
+ * Server Action) chegava ANTES do listener existir, ou num instância do `Toaster` que já fora
+ * substituída. Resultado: o toast "sumia".
+ *
+ * Solução: um ponteiro `live` para o `add` do `Toaster` atualmente montado + uma `queue` que
+ * bufferiza toasts disparados enquanto nenhum `Toaster` está vivo. Ao montar, o `Toaster` assume
+ * `live` e drena a fila. Assim o toast nunca se perde, independente de ordem de efeitos/remontagem.
+ */
+let live: ((t: PendingToast) => void) | null = null;
+let queue: PendingToast[] = [];
 
-/** Dispara um toast de qualquer client component do admin. `action` adiciona um botão (FIX 4). */
+/** Dispara um toast de qualquer client component do admin. `action` adiciona um botão. */
 export function toast(
   text: string,
   tone: ToastTone = "success",
   action?: ToastAction,
 ) {
-  if (typeof window === "undefined") return;
-  window.dispatchEvent(new CustomEvent(EVENT, { detail: { text, tone, action } }));
+  const t: PendingToast = { text, tone, action };
+  if (live) live(t);
+  else queue.push(t);
 }
 
 /** Mensagens acionadas por redirecionamento de Server Action (`?flash=<chave>`). */
@@ -75,10 +91,14 @@ const TONE_STYLE: Record<ToastTone, { className: string; Icon: typeof CheckCircl
 
 let counter = 0;
 
-/** Lê `?flash=<chave>` no carregamento, emite o toast e limpa o parâmetro da URL. */
+/**
+ * Lê `?flash=<chave>` no carregamento, dispara o toast (via `toast()` de módulo — que bufferiza
+ * se nenhum `Toaster` estiver vivo ainda) e limpa o parâmetro da URL com `history.replaceState`
+ * (só o browser). Não usamos `router.replace`: ele dispara navegação RSC → `loading.tsx` → remonta
+ * a árvore (o `Toaster` é por-página), o que descartaria o toast recém-adicionado.
+ */
 function FlashFromParams() {
   const params = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
   const flash = params.get("flash");
 
@@ -86,11 +106,10 @@ function FlashFromParams() {
     if (!flash) return;
     const msg = FLASH_MESSAGES[flash];
     if (msg) toast(msg.text, msg.tone);
-    // Remove só o `flash`, preservando os demais parâmetros.
     const next = new URLSearchParams(params);
     next.delete("flash");
     const qs = next.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    window.history.replaceState(window.history.state, "", qs ? `${pathname}?${qs}` : pathname);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flash]);
 
@@ -100,24 +119,32 @@ function FlashFromParams() {
 export function Toaster() {
   const [items, setItems] = useState<ToastItem[]>([]);
 
-  useEffect(() => {
-    function onToast(e: Event) {
-      const detail = (e as CustomEvent<{ text: string; tone: ToastTone; action?: ToastAction }>).detail;
-      if (!detail?.text) return;
-      const id = ++counter;
-      setItems((prev) => [
-        ...prev,
-        { id, text: detail.text, tone: detail.tone ?? "success", action: detail.action },
-      ]);
-      // Toasts com ação (ex.: "Recarregar") ficam mais tempo na tela.
-      window.setTimeout(
-        () => setItems((prev) => prev.filter((t) => t.id !== id)),
-        detail.action ? 12000 : 4500,
-      );
-    }
-    window.addEventListener(EVENT, onToast);
-    return () => window.removeEventListener(EVENT, onToast);
+  // Adiciona um toast à fila e agenda o auto-descarte. Estável entre renders.
+  const add = useCallback((t: PendingToast) => {
+    const id = ++counter;
+    setItems((prev) => [...prev, { id, ...t }]);
+    // Toasts com ação (ex.: "Recarregar") ficam mais tempo na tela.
+    window.setTimeout(
+      () => setItems((prev) => prev.filter((x) => x.id !== id)),
+      t.action ? 12000 : 4500,
+    );
   }, []);
+
+  // Assume o canal de toasts: vira o `live` e drena a fila acumulada antes da montagem.
+  useEffect(() => {
+    live = add;
+    if (queue.length) {
+      const pending = queue;
+      queue = [];
+      // Drenar a fila logo na montagem é intencional (mostra toasts disparados antes de existir
+      // um Toaster vivo, ex.: `?flash=` após redirect). `add` só chama setState após render.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      for (const t of pending) add(t);
+    }
+    return () => {
+      if (live === add) live = null;
+    };
+  }, [add]);
 
   return (
     <>
