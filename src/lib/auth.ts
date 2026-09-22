@@ -81,8 +81,11 @@ Se você não solicitou, ignore este e-mail — sua senha permanece a mesma.`,
     },
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 dias (absoluta)
-    updateAge: 60 * 60 * 24, // renova a cada 1 dia
+    // Logout automático por INATIVIDADE de 24h (janela deslizante): enquanto o admin usa o
+    // painel, a sessão é renovada; após 24h sem nenhuma atividade, expira e o próximo acesso
+    // volta para o login. Reduzido de 7 dias para 24h por segurança (painel com PII/LGPD).
+    expiresIn: 60 * 60 * 24, // 24h de validade
+    updateAge: 60 * 60, // renova no máx. 1×/hora (evita escrita no banco a cada request)
   },
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
