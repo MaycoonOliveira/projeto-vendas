@@ -13,10 +13,15 @@ import http from "k6/http";
 import { check, sleep } from "k6";
 import { Rate } from "k6/metrics";
 
-const BASE_URL = (__ENV.BASE_URL || "http://localhost:3000").replace(/\/$/, "");
+const BASE_URL = (__ENV.BASE_URL || "https://reservashouse.vercel.app/").replace(/\/$/, "");
 const PROFILE = __ENV.PROFILE || "load";
 
 const rateLimited = new Rate("rate_limited"); // fração de respostas 429 (esperado sob carga alta)
+
+// 429 (rate limit) é resposta ESPERADA sob carga a partir de 1 único IP (o k6/Grafana sai de um
+// IP só). Marca 200 E 429 como "esperadas" para que `http_req_failed` NÃO conte o rate limit como
+// falha do app — assim o threshold reflete erros reais (5xx), não a proteção funcionando.
+http.setResponseCallback(http.expectedStatuses(200, 429));
 
 // Perfis de carga. `stages` sobe/desce o nº de usuários virtuais (VUs) ao longo do tempo.
 const PROFILES = {
