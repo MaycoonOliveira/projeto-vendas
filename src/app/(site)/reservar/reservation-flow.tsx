@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { formatCentsBRL } from "@/lib/utils";
 import { perNightSummary } from "@/lib/payment-status";
 import { AvailabilityCalendar } from "./availability-calendar";
+import { PhotoCarousel } from "./photo-carousel";
 
 const inputBase =
   "h-11 w-full rounded-xl border bg-surface px-3 text-sm text-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/25";
@@ -350,20 +351,7 @@ export function ReservationFlow() {
                   className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-soft)]"
                 >
                   {r.photos.length > 0 ? (
-                    <div className="flex gap-2 overflow-x-auto p-2">
-                      {r.photos.map((ph, idx) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          key={idx}
-                          src={ph.url}
-                          alt={ph.alt ?? r.name}
-                          loading="lazy"
-                          className={`h-44 flex-shrink-0 rounded-xl object-cover ${
-                            r.photos.length === 1 ? "w-full" : "w-64"
-                          }`}
-                        />
-                      ))}
-                    </div>
+                    <PhotoCarousel photos={r.photos} name={r.name} />
                   ) : null}
                   <div className="p-6">
                   <h3 className="font-serif text-xl font-semibold text-foreground">
@@ -399,8 +387,12 @@ export function ReservationFlow() {
         <form
           onSubmit={submit}
           noValidate
-          className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]"
+          className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-soft)]"
         >
+          {selected.photos.length > 0 ? (
+            <PhotoCarousel photos={selected.photos} name={selected.name} aspect="aspect-[16/9]" />
+          ) : null}
+          <div className="p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="font-serif text-xl font-semibold text-foreground">
@@ -505,6 +497,7 @@ export function ReservationFlow() {
           <Button type="submit" size="md" className="mt-5 w-full" disabled={submitting}>
             {submitting ? "Enviando…" : "Solicitar reserva"}
           </Button>
+          </div>
         </form>
       ) : null}
     </div>

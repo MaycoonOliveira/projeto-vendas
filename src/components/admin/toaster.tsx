@@ -28,6 +28,10 @@ const FLASH_MESSAGES: Record<string, { text: string; tone: ToastTone }> = {
   completed: { text: "Reserva concluída.", tone: "success" },
   no_show: { text: "Reserva marcada como no-show.", tone: "success" },
   saved: { text: "Alterações salvas.", tone: "success" },
+  acc_created: { text: "Acomodação criada.", tone: "success" },
+  acc_saved: { text: "Acomodação salva.", tone: "success" },
+  rate_saved: { text: "Tarifa adicionada.", tone: "success" },
+  rate_removed: { text: "Tarifa removida.", tone: "success" },
   created: { text: "Reserva criada.", tone: "success" },
   blocked: { text: "Bloqueio criado.", tone: "success" },
   unblocked: { text: "Bloqueio removido.", tone: "success" },
@@ -132,7 +136,7 @@ export function Toaster() {
               key={t.id}
               role="status"
               aria-live="polite"
-              className={`pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-[var(--shadow-lift)] ${className}`}
+              className={`pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-[var(--shadow-lift)] [animation:var(--animate-toast-in)] ${className}`}
             >
               <Icon className="mt-0.5 size-5 shrink-0" aria-hidden />
               <span className="flex-1">{t.text}</span>

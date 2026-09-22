@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/admin/toaster";
 import type { FormState } from "./actions";
 
 const inputClass =
@@ -42,6 +43,16 @@ export function AccommodationForm({
   );
   const fe = state.fieldErrors ?? {};
   const v = values ?? {};
+
+  // Sucesso vira toast via redirect (?flash=). Aqui cobrimos os erros que NÃO redirecionam
+  // (validação/conflito voltam no state) — dispara um toast além da mensagem inline.
+  const lastError = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (state.error && state.error !== lastError.current) {
+      toast(state.error, "error");
+    }
+    lastError.current = state.error;
+  }, [state]);
 
   return (
     <form action={formAction} className="flex max-w-2xl flex-col gap-5">

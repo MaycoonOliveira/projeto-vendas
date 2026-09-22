@@ -94,7 +94,7 @@ export async function createAccommodationAction(
   });
 
   revalidatePath("/admin/acomodacoes");
-  redirect(`/admin/acomodacoes/${created.id}?saved=1`);
+  redirect(`/admin/acomodacoes/${created.id}?flash=acc_created`);
 }
 
 export async function updateAccommodationAction(
@@ -144,7 +144,7 @@ export async function updateAccommodationAction(
 
   revalidatePath("/admin/acomodacoes");
   revalidatePath(`/admin/acomodacoes/${id}`);
-  redirect(`/admin/acomodacoes/${id}?saved=1`);
+  redirect(`/admin/acomodacoes/${id}?flash=acc_saved`);
 }
 
 export async function deleteAccommodationAction(formData: FormData): Promise<void> {
@@ -215,7 +215,7 @@ export async function createOverrideAction(
   });
 
   revalidatePath(`/admin/acomodacoes/${accommodationId}`);
-  return {};
+  redirect(`/admin/acomodacoes/${accommodationId}?flash=rate_saved`);
 }
 
 export async function deleteOverrideAction(formData: FormData): Promise<void> {
@@ -237,7 +237,10 @@ export async function deleteOverrideAction(formData: FormData): Promise<void> {
     }
   }
 
-  if (accommodationId) revalidatePath(`/admin/acomodacoes/${accommodationId}`);
+  if (accommodationId) {
+    revalidatePath(`/admin/acomodacoes/${accommodationId}`);
+    redirect(`/admin/acomodacoes/${accommodationId}?flash=rate_removed`);
+  }
 }
 
 /**

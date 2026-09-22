@@ -9,6 +9,7 @@ import {
   listOverrides,
 } from "@/lib/services/accommodation";
 import { listPhotos } from "@/lib/services/accommodation-photo";
+import { storageConfigured } from "@/lib/storage";
 import { formatCentsBRL } from "@/lib/utils";
 import { AccommodationForm } from "../accommodation-form";
 import {
@@ -24,20 +25,18 @@ export const metadata: Metadata = { title: "Editar acomodação" };
 
 export default async function EditAccommodationPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string }>;
 }) {
   await requireAdmin();
   const { id } = await params;
-  const { saved } = await searchParams;
 
   const accommodation = await getAccommodation(id);
   if (!accommodation) notFound();
 
   const overrides = await listOverrides(id);
   const photos = await listPhotos(id);
+  const storageOk = storageConfigured();
 
   return (
     <AdminShell>
@@ -50,12 +49,6 @@ export default async function EditAccommodationPage({
       <h1 className="mt-2 font-serif text-2xl font-semibold text-foreground">
         {accommodation.name}
       </h1>
-
-      {saved ? (
-        <p className="mt-4 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-          Alterações salvas.
-        </p>
-      ) : null}
 
       <section className="mt-6">
         <AccommodationForm
@@ -82,6 +75,18 @@ export default async function EditAccommodationPage({
           Aparecem no site público e na busca de disponibilidade. Escolha uma ou mais imagens
           (JPG, PNG, WEBP, AVIF ou GIF, até 6MB cada), confira a prévia e clique em enviar.
         </p>
+
+        {!storageOk ? (
+          <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <p className="font-semibold">Armazenamento de imagens indisponível neste ambiente.</p>
+            <p className="mt-1 text-amber-800">
+              As fotos enviadas <strong>não serão salvas</strong> até que a variável
+              <code className="mx-1 rounded bg-amber-100 px-1 py-0.5 text-xs">SERVICE_ROLE_KEY</code>
+              (e <code className="mx-1 rounded bg-amber-100 px-1 py-0.5 text-xs">SUPABASE_URL</code>)
+              esteja configurada no ambiente do deploy (Vercel → Settings → Environment Variables).
+            </p>
+          </div>
+        ) : null}
 
         <PhotoUploader accommodationId={accommodation.id} />
 
