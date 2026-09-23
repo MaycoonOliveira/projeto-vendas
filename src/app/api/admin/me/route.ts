@@ -12,6 +12,8 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
-  const role = user.role ?? "STAFF";
+  // Default retrocompatível: alinhado ao `verifySession` da DAL (role legado ausente = ADMIN/owner).
+  // Manter igual à DAL evita esconder/permitir a mesma aba de forma inconsistente.
+  const role = user.role ?? "ADMIN";
   return NextResponse.json({ role, owner: isOwner(role), name: user.name ?? "" });
 }
