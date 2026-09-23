@@ -92,6 +92,13 @@
       "when": 1789769412110,
       "tag": "0012_audit_log_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1789769500000,
+      "tag": "0013_enable_rls",
+      "breakpoints": true
     }
   ]
 }
