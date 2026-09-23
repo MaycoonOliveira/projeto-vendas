@@ -90,7 +90,12 @@ export function proxy(request: NextRequest): NextResponse {
       const csp = [
         "default-src 'self'",
         `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-        `style-src 'self' 'nonce-${nonce}'`,
+        // `style-src` com `'unsafe-inline'` (sem nonce): nonce NÃO cobre atributos `style=`, e o
+        // React 19 aplica estilos inline (reveal do Suspense, barras/larguras calculadas etc.).
+        // Com nonce e sem `'unsafe-inline'`, o navegador bloqueava esses estilos e as páginas do
+        // admin ficavam presas no skeleton "Carregando…". A proteção contra XSS vive no `script-src`
+        // (nonce + strict-dynamic); estilo inline é risco baixo (React escapa; sem HTML do usuário).
+        "style-src 'self' 'unsafe-inline'",
         // `*.supabase.co`: fotos das acomodações (Supabase Storage, bucket público) na galeria admin.
         "img-src 'self' blob: data: https://*.supabase.co",
         "font-src 'self'",
