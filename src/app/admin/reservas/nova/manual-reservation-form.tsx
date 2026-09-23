@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { maskPhoneBR } from "@/lib/masks";
 import { createManualReservationAction, type FormState } from "../actions";
 
 const inputClass =
@@ -18,6 +19,7 @@ export function ManualReservationForm({
     createManualReservationAction,
     {},
   );
+  const [phone, setPhone] = useState("");
 
   return (
     <form action={action} className="flex flex-col gap-4">
@@ -56,11 +58,21 @@ export function ManualReservationForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="email" className={labelClass}>E-mail</label>
-          <input id="email" name="email" type="email" required className={inputClass} />
+          <input id="email" name="email" type="email" inputMode="email" autoCapitalize="none" autoComplete="email" required className={inputClass} />
         </div>
         <div>
           <label htmlFor="phone" className={labelClass}>Telefone / WhatsApp</label>
-          <input id="phone" name="phone" required className={inputClass} />
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            placeholder="(24) 99999-9999"
+            value={phone}
+            onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
+            required
+            className={inputClass}
+          />
         </div>
       </div>
       <div>

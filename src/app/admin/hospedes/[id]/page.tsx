@@ -8,6 +8,7 @@ import { getGuestProfile } from "@/lib/services/guest";
 import { GUEST_STATUSES } from "@/db/schema";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
 import { staysToNextTier, TIER_TOOLTIP } from "@/lib/loyalty";
+import { formatDateBR } from "@/lib/dates";
 import { formatCentsBRL } from "@/lib/utils";
 import { addGuestMessageAction, setGuestStatusAction, updateGuestCrmAction } from "../actions";
 
@@ -216,7 +217,7 @@ export default async function GuestProfilePage({
                       {s.accommodationName}
                     </span>
                     <span className="block truncate text-xs text-foreground/50">
-                      {s.checkIn} → {s.checkOut} · {formatCentsBRL(s.totalPriceCents)}
+                      {formatDateBR(s.checkIn)} → {formatDateBR(s.checkOut)} · {formatCentsBRL(s.totalPriceCents)}
                     </span>
                   </Link>
                   <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${badge.className}`}>

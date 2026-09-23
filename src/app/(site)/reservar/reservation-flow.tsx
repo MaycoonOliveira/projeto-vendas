@@ -6,6 +6,8 @@ import { Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { formatCentsBRL } from "@/lib/utils";
+import { formatDateBR } from "@/lib/dates";
+import { maskPhoneBR } from "@/lib/masks";
 import { perNightSummary } from "@/lib/payment-status";
 import { AvailabilityCalendar } from "./availability-calendar";
 import { PhotoCarousel } from "./photo-carousel";
@@ -399,7 +401,14 @@ export function ReservationFlow() {
                 {selected.name}
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {checkin} → {checkout} · {guests} hóspede{guests > 1 ? "s" : ""} ·{" "}
+                Período:{" "}
+                <strong className="text-foreground">
+                  {formatDateBR(checkin)} - {formatDateBR(checkout)}
+                </strong>{" "}
+                ({selected.price.nights} noite{selected.price.nights > 1 ? "s" : ""})
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {guests} hóspede{guests > 1 ? "s" : ""} ·{" "}
                 <strong className="text-foreground">
                   {formatCentsBRL(selected.price.totalCents)}
                 </strong>
@@ -443,6 +452,10 @@ export function ReservationFlow() {
                   id="email"
                   type="email"
                   required
+                  inputMode="email"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  placeholder="voce@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   aria-invalid={Boolean(emailError)}
@@ -462,8 +475,11 @@ export function ReservationFlow() {
                 <input
                   id="phone"
                   required
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="(24) 99999-9999"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
                   aria-invalid={Boolean(phoneError)}
                   aria-describedby={phoneError ? "phone-error" : undefined}
                   className={inputClass(Boolean(phoneError))}

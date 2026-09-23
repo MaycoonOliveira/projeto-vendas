@@ -10,6 +10,7 @@ import {
 } from "@/lib/services/accommodation";
 import { listPhotos } from "@/lib/services/accommodation-photo";
 import { storageConfigured } from "@/lib/storage";
+import { formatDateBR } from "@/lib/dates";
 import { formatCentsBRL } from "@/lib/utils";
 import { AccommodationForm } from "../accommodation-form";
 import {
@@ -153,7 +154,7 @@ export default async function EditAccommodationPage({
                 {overrides.map((o) => (
                   <tr key={o.id} className="border-b border-border last:border-0">
                     <td className="px-4 py-3 text-foreground/80">
-                      {o.startDate} — {o.endDate}
+                      {formatDateBR(o.startDate)} — {formatDateBR(o.endDate)}
                     </td>
                     <td className="px-4 py-3 text-foreground/80">
                       {formatCentsBRL(o.priceCents)}

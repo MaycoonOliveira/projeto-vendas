@@ -54,7 +54,8 @@ export function ReserveButton({
   // );
 }
 
-/** Botão de WhatsApp com mensagem pré-preenchida. */
+/** Botão de WhatsApp com mensagem pré-preenchida. `href` sobrepõe o número padrão (ex.: número
+ *  vindo das Configurações, resolvido no servidor). */
 export function WhatsappButton({
   variant = "outline",
   size = "md",
@@ -63,10 +64,11 @@ export function WhatsappButton({
   withIcon = true,
   source,
   message,
-}: CtaProps & { message?: string }) {
+  href,
+}: CtaProps & { message?: string; href?: string }) {
   return (
     <a
-      href={buildWhatsappUrl(message)}
+      href={href ?? buildWhatsappUrl(message)}
       target="_blank"
       rel="noopener noreferrer"
       onClick={() => track("click_whatsapp", { source: source ?? "generic" })}

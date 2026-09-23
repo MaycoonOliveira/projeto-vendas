@@ -9,7 +9,7 @@ import {
 } from "@/app/admin/reservas/actions";
 import { receivedThisMonthCents } from "@/lib/services/finance";
 import { requireAdmin } from "@/lib/dal";
-import { todayInSaoPaulo } from "@/lib/dates";
+import { formatDateBR, todayInSaoPaulo } from "@/lib/dates";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
 import { listAccommodations } from "@/lib/services/accommodation";
 import { listOccupancyForCalendar } from "@/lib/services/block";
@@ -195,7 +195,7 @@ export default async function AdminDashboardPage({
                 <Link href={`/admin/reservas/${r.id}`} className="min-w-0">
                   <span className="block truncate text-sm font-medium text-foreground">{r.guestName}</span>
                   <span className="block truncate text-xs text-foreground/50">
-                    {r.accommodationName} · {r.checkIn} → {r.checkOut} · {formatCentsBRL(r.totalPriceCents)}
+                    {r.accommodationName} · {formatDateBR(r.checkIn)} → {formatDateBR(r.checkOut)} · {formatCentsBRL(r.totalPriceCents)}
                   </span>
                 </Link>
                 <span className="shrink-0 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">

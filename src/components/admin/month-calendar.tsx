@@ -37,11 +37,21 @@ export function MonthCalendar({ month, entries, today, prevHref, nextHref }: Mon
   const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
   const firstWeekday = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
 
+  // Ocupação por dia: intervalo SEMIABERTO `[checkIn, checkOut)` — o dia do CHECK-OUT NÃO é
+  // ocupado (o hóspede sai e a diária não é cobrada), ficando livre para um novo check-in.
   const byDay = new Map<string, CalendarEntry>();
   for (let d = 1; d <= daysInMonth; d += 1) {
     const iso = isoDate(y, m, d);
     const hit = entries.find((e) => e.checkIn <= iso && iso < e.checkOut);
     if (hit) byDay.set(iso, hit);
+  }
+
+  // Dias de SAÍDA (check-out) de reservas — marcados só quando o dia está livre (não ocupado por
+  // outra reserva/bloqueio). Deixa visualmente claro que o dia do check-out é um dia de partida
+  // (disponível para nova chegada), esclarecendo por que ele não aparece "ocupado".
+  const checkoutDays = new Set<string>();
+  for (const e of entries) {
+    if (e.type !== "BLOCK" && !byDay.has(e.checkOut)) checkoutDays.add(e.checkOut);
   }
 
   const cells: (number | null)[] = [
@@ -99,9 +109,14 @@ export function MonthCalendar({ month, entries, today, prevHref, nextHref }: Mon
           if (day === null) return <div key={`b${i}`} />;
           const iso = isoDate(y, m, day);
           const entry = byDay.get(iso);
+          const isCheckout = !entry && checkoutDays.has(iso);
           const isToday = iso === today;
           const st = entry ? entryStyle(entry) : null;
-          const style = st ? st.cell : "border-border bg-white text-foreground/70";
+          const style = st
+            ? st.cell
+            : isCheckout
+              ? "border-blue-200 bg-blue-50/60 text-blue-700"
+              : "border-border bg-white text-foreground/70";
           return (
             <div
               key={iso}
@@ -113,12 +128,16 @@ export function MonthCalendar({ month, entries, today, prevHref, nextHref }: Mon
                   ? entry.type === "BLOCK"
                     ? `Bloqueio${entry.label ? ` — ${entry.label}` : ""}`
                     : `Reserva ${entry.publicCode} — ${st?.label}`
-                  : "Livre"
+                  : isCheckout
+                    ? "Saída (check-out) — dia livre para nova chegada"
+                    : "Livre"
               }
             >
               <span className={`font-medium ${isToday ? "text-primary" : ""}`}>{day}</span>
               {entry ? (
                 <span className="mt-auto truncate text-[10px] font-medium">{st?.label}</span>
+              ) : isCheckout ? (
+                <span className="mt-auto truncate text-[10px] font-medium text-blue-600/80">Saída</span>
               ) : null}
             </div>
           );
@@ -137,6 +156,9 @@ export function MonthCalendar({ month, entries, today, prevHref, nextHref }: Mon
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded border border-neutral-200 bg-neutral-100" /> Bloqueio
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block size-3 rounded border border-blue-200 bg-blue-50" /> Saída (check-out)
         </span>
       </div>
     </div>

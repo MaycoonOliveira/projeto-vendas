@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { requireAdmin } from "@/lib/dal";
+import { formatDateBR } from "@/lib/dates";
 import { listAccommodations } from "@/lib/services/accommodation";
 import { listBlocks } from "@/lib/services/block";
 import { deleteBlockAction } from "./actions";
@@ -44,7 +45,7 @@ export default async function BloqueiosPage() {
                 <div className="min-w-0">
                   <p className="font-medium text-foreground/90">{b.accommodationName}</p>
                   <p className="mt-0.5 text-sm text-foreground/70">
-                    {b.startDate} → {b.endDate}
+                    {formatDateBR(b.startDate)} → {formatDateBR(b.endDate)}
                   </p>
                   {b.reason ? (
                     <p className="mt-0.5 text-xs text-foreground/50">{b.reason}</p>
@@ -77,7 +78,7 @@ export default async function BloqueiosPage() {
                 <tr key={b.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 text-foreground/80">{b.accommodationName}</td>
                   <td className="px-4 py-3 text-foreground/70">
-                    {b.startDate} → {b.endDate}
+                    {formatDateBR(b.startDate)} → {formatDateBR(b.endDate)}
                   </td>
                   <td className="px-4 py-3 text-foreground/60">{b.reason ?? "—"}</td>
                   <td className="px-4 py-3 text-right">

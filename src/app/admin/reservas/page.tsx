@@ -8,6 +8,7 @@ import { listReservations } from "@/lib/services/reservation-admin";
 import { totalPaidByReservation } from "@/lib/services/payment";
 import { paymentStatus, perNightSummary } from "@/lib/payment-status";
 import type { ReservationStatus } from "@/db/schema";
+import { formatDateBR } from "@/lib/dates";
 import { formatCentsBRL } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Reservas" };
@@ -140,7 +141,7 @@ export default async function ReservasPage({
                   </span>
                 </Link>
                 <p className="mt-2 text-sm text-foreground/70">
-                  {r.checkIn} → {r.checkOut}
+                  {formatDateBR(r.checkIn)} → {formatDateBR(r.checkOut)}
                 </p>
                 <p className="text-xs text-foreground/45">
                   {perNightSummary(r.totalPriceCents, r.nights)} · até {r.accommodationCapacity} hóspedes
@@ -216,7 +217,7 @@ export default async function ReservasPage({
                       </span>
                     </td>
                     <td className="px-4 py-3 align-top text-foreground/70">
-                      {r.checkIn} → {r.checkOut}
+                      {formatDateBR(r.checkIn)} → {formatDateBR(r.checkOut)}
                       <span className="block text-xs text-foreground/45">
                         {perNightSummary(r.totalPriceCents, r.nights)} · até{" "}
                         {r.accommodationCapacity} hóspedes

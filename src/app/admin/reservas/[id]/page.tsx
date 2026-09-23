@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { requireAdmin } from "@/lib/dal";
-import { todayInSaoPaulo } from "@/lib/dates";
+import { formatDateBR, formatStayBR, todayInSaoPaulo } from "@/lib/dates";
 import { effectiveStatus, RESERVATION_STATUS_LABEL } from "@/lib/reservation-status";
 import { getReservationAdmin } from "@/lib/services/reservation-admin";
 import { listPhotos } from "@/lib/services/accommodation-photo";
@@ -78,7 +78,7 @@ export default async function ReservaDetailPage({
           ) : null}
           <dl className="mt-3 grid gap-2 text-sm">
             <Row label="Acomodação" value={accommodation?.name ?? "—"} />
-            <Row label="Período" value={`${r.checkIn} → ${r.checkOut} (${r.nights} noite${r.nights > 1 ? "s" : ""})`} />
+            <Row label="Período" value={formatStayBR(r.checkIn, r.checkOut, r.nights)} />
             <Row label="Hóspedes" value={String(r.guestsCount)} />
             <Row label="Total" value={formatCentsBRL(r.totalPriceCents)} />
             <Row label="Origem" value={r.source} />
@@ -180,7 +180,7 @@ export default async function ReservaDetailPage({
               <li key={p.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                 <span className="text-foreground/80">
                   <strong className="text-foreground">{formatCentsBRL(p.amountCents)}</strong>{" "}
-                  · {PAYMENT_METHOD_LABEL[p.method] ?? p.method} · {p.paidOn}
+                  · {PAYMENT_METHOD_LABEL[p.method] ?? p.method} · {formatDateBR(p.paidOn)}
                   {p.note ? <span className="text-foreground/50"> · {p.note}</span> : null}
                 </span>
                 <form action={deletePaymentAction}>

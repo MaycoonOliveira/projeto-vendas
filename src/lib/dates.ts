@@ -62,3 +62,17 @@ export function todayInSaoPaulo(): string {
 export function isPastDate(value: string): boolean {
   return value < todayInSaoPaulo();
 }
+
+/** Exibe uma data ISO `YYYY-MM-DD` como `DD-MM-YYYY` (mais legível ao usuário BR). Se o valor
+ *  não for ISO, retorna-o inalterado (nunca quebra a renderização). */
+export function formatDateBR(iso: string): string {
+  if (!ISO_RE.test(iso)) return iso;
+  const [y, m, d] = iso.split("-");
+  return `${d}-${m}-${y}`;
+}
+
+/** Período de estadia formatado: `DD-MM-YYYY - DD-MM-YYYY (N noites)`. */
+export function formatStayBR(checkIn: string, checkOut: string, nights?: number): string {
+  const n = nights ?? nightsBetween(checkIn, checkOut);
+  return `${formatDateBR(checkIn)} - ${formatDateBR(checkOut)} (${n} noite${n === 1 ? "" : "s"})`;
+}

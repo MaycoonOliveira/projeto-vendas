@@ -9,7 +9,10 @@ import {
   getReservationByPublicCode,
   isExpiredHold,
 } from "@/lib/services/reservation";
+import { getSettingsMap } from "@/lib/services/setting";
 import { perNightSummary } from "@/lib/payment-status";
+import { formatStayBR } from "@/lib/dates";
+import { waHrefFromPhone } from "@/lib/whatsapp";
 import { formatCentsBRL } from "@/lib/utils";
 
 // Página por capability (código secreto) — nunca indexar; sempre dinâmica (lê o banco).
@@ -45,6 +48,13 @@ export default async function ReservaPage({
   const badge = STATUS_LABEL[status] ?? STATUS_LABEL.PENDING;
   const firstName = guest?.fullName?.trim().split(/\s+/)[0] ?? "";
 
+  // Número de WhatsApp vem das Configurações (aba Dados da pousada); cai no siteConfig se vazio.
+  const settings = await getSettingsMap();
+  const waHref = waHrefFromPhone(
+    settings.contact_whatsapp,
+    `Olá! Sobre a minha reserva ${r.publicCode} na ${accommodationName}.`,
+  );
+
   return (
     <>
       <PageHeader
@@ -71,11 +81,10 @@ export default async function ReservaPage({
                 <dt className="text-muted-foreground">Acomodação</dt>
                 <dd className="text-foreground">{accommodationName}</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-wrap justify-between gap-x-2">
                 <dt className="text-muted-foreground">Período</dt>
-                <dd className="text-foreground">
-                  {r.checkIn} → {r.checkOut} ({r.nights} noite
-                  {r.nights > 1 ? "s" : ""})
+                <dd className="text-right text-foreground">
+                  {formatStayBR(r.checkIn, r.checkOut, r.nights)}
                 </dd>
               </div>
               <div className="flex justify-between">
@@ -113,7 +122,7 @@ export default async function ReservaPage({
             ) : null}
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <WhatsappButton size="md" source="reserva" />
+              <WhatsappButton size="md" source="reserva" href={waHref} />
             </div>
           </div>
         </Container>

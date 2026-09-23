@@ -5,26 +5,38 @@
  * Fase 16.2: organizados em seções (renderizadas como abas). Adicionar um campo aqui já o faz
  * aparecer no formulário e ser salvo (a action percorre SETTING_FIELDS).
  */
-export type SettingFieldType = "text" | "textarea" | "number" | "time";
+export type SettingFieldType = "text" | "textarea" | "number" | "time" | "email";
 
 export type SettingSection = {
   id: "pousada" | "operacao" | "financeiro" | "notificacoes" | "integracoes";
   label: string;
   description?: string;
+  /** Oculta a aba na UI (mas mantém os campos MAPEADOS para as próximas fases). Os valores
+   *  já salvos são preservados no submit (a action só grava chaves presentes no formulário). */
+  hidden?: boolean;
 };
 
 export const SETTING_SECTIONS: readonly SettingSection[] = [
   { id: "pousada", label: "Dados da pousada", description: "Identificação e contatos exibidos aos hóspedes." },
   { id: "operacao", label: "Operação", description: "Horários e regras da estadia." },
   { id: "financeiro", label: "Financeiro & Reservas", description: "Prazos, hold e taxas." },
+  // Ocultas por ora (a finalizar nas próximas fases). Mantidas mapeadas: basta remover `hidden`.
   {
     id: "notificacoes",
     label: "Notificações WhatsApp",
     description:
       "Aviso automático ao admin a cada nova reserva (Z-API). Deixe em branco para desativar.",
+    hidden: true,
   },
-  { id: "integracoes", label: "Integrações", description: "Sincronização de calendários (em breve)." },
+  {
+    id: "integracoes",
+    label: "Integrações",
+    description: "Sincronização de calendários (em breve).",
+    hidden: true,
+  },
 ] as const;
+
+export type SettingFieldMask = "phone" | "phone-intl" | "cnpj" | "cep";
 
 export type SettingField = {
   key: string;
@@ -33,15 +45,28 @@ export type SettingField = {
   section: SettingSection["id"];
   placeholder?: string;
   help?: string;
+  /** Máscara de exibição (ver `@/lib/masks`). Não altera a validação. */
+  mask?: SettingFieldMask;
+  /** Campo obrigatório (validado no servidor). */
+  required?: boolean;
 };
 
 export const SETTING_FIELDS: readonly SettingField[] = [
   // Dados da pousada
   { key: "pousada_name", label: "Nome da pousada", type: "text", section: "pousada", placeholder: "Casa Carram" },
-  { key: "cnpj", label: "CNPJ", type: "text", section: "pousada", placeholder: "00.000.000/0001-00" },
+  { key: "cnpj", label: "CNPJ", type: "text", section: "pousada", placeholder: "00.000.000/0001-00", mask: "cnpj" },
   { key: "address", label: "Endereço", type: "textarea", section: "pousada", placeholder: "Rua, nº, bairro, cidade/UF, CEP" },
-  { key: "contact_whatsapp", label: "WhatsApp de contato", type: "text", section: "pousada", placeholder: "+55 24 99999-9999" },
-  { key: "contact_email", label: "E-mail de contato", type: "text", section: "pousada" },
+  {
+    key: "contact_whatsapp",
+    label: "WhatsApp de contato",
+    type: "text",
+    section: "pousada",
+    placeholder: "+55 24 99999-9999",
+    mask: "phone-intl",
+    required: true,
+    help: "Número usado nos botões \"Falar no WhatsApp\" das telas de reserva. Obrigatório.",
+  },
+  { key: "contact_email", label: "E-mail de contato", type: "email", section: "pousada", placeholder: "contato@casacarram.com.br" },
   { key: "instagram", label: "Instagram", type: "text", section: "pousada", placeholder: "@casacarram" },
   { key: "facebook", label: "Facebook", type: "text", section: "pousada" },
 
@@ -63,7 +88,7 @@ export const SETTING_FIELDS: readonly SettingField[] = [
   { key: "zapi_instance_id", label: "Instância Z-API", type: "text", section: "notificacoes", placeholder: "3ABC…", help: "ID da instância no painel da Z-API." },
   { key: "zapi_token", label: "Token Z-API", type: "text", section: "notificacoes", help: "Segredo da instância. Em produção, prefira a variável de ambiente ZAPI_TOKEN." },
   { key: "zapi_client_token", label: "Client-Token (Account Security)", type: "text", section: "notificacoes", help: "Só se a conta Z-API estiver com \"Account Security\" ligado. É o \"Token de segurança da conta\" (menu Segurança). Em produção, prefira a variável de ambiente ZAPI_CLIENT_TOKEN." },
-  { key: "whatsapp_notify_phone", label: "Telefone destino", type: "text", section: "notificacoes", placeholder: "+55 24 99999-9999", help: "Número que recebe o aviso de nova reserva (com DDI). Se em branco, usa o \"WhatsApp de contato\" da aba Dados da pousada." },
+  { key: "whatsapp_notify_phone", label: "Telefone destino", type: "text", section: "notificacoes", placeholder: "+55 24 99999-9999", mask: "phone-intl", help: "Número que recebe o aviso de nova reserva (com DDI). Se em branco, usa o \"WhatsApp de contato\" da aba Dados da pousada." },
 ] as const;
 
 export type SettingKey = (typeof SETTING_FIELDS)[number]["key"];
