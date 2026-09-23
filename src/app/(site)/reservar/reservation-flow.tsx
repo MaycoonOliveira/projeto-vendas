@@ -367,6 +367,9 @@ export function ReservationFlow() {
                       <p className="text-lg font-semibold text-foreground">
                         {formatCentsBRL(r.price.totalCents)}
                       </p>
+                      <p className="text-xs font-medium text-foreground/70">
+                        {formatDateBR(checkin)} - {formatDateBR(checkout)}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {perNightSummary(r.price.totalCents, r.price.nights)} · até{" "}
                         {r.capacity} hóspedes
