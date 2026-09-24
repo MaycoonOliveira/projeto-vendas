@@ -31,7 +31,12 @@ function getSqlClient() {
       // `max > 1` evita head-of-line blocking: enquanto uma conexão "acorda" o compute do
       // Supabase (free tier hiberna), as outras seguem servindo. Seguro no pooler de transação
       // (feito para muitas conexões curtas). Baixo tráfego de uma pousada não esgota o pool.
-      max: 5,
+      //
+      // ATENÇÃO: quando o nº de queries SIMULTÂNEAS ultrapassa `max`, o pool trava (as
+      // excedentes ficam na fila e o Postgres acaba cancelando com 57014) — a tela fica
+      // presa no skeleton. Mantemos folga aqui e evitamos rajadas grandes por request
+      // (ex.: a página /admin/financeiro roda as queries em série).
+      max: 10,
       idle_timeout: 120, // mantém a conexão quente durante o uso; recicla só após 2min ociosa.
       connect_timeout: 30, // tolera o cold-start do compute do Supabase ao (re)conectar.
     });

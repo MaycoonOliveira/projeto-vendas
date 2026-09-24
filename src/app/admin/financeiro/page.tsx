@@ -19,12 +19,15 @@ export const metadata: Metadata = { title: "Financeiro" };
 export default async function FinanceiroPage() {
   await requireOwner();
 
-  const [kpis, monthly, byStatus, byMethod] = await Promise.all([
-    financeKpis(),
-    revenueByMonth(12),
-    reservationsByStatus(),
-    paymentsByMethod(),
-  ]);
+  // Sequencial de propósito: o pooler de transação do Supabase trava quando o
+  // número de queries SIMULTÂNEAS passa do `max` do pool (ver src/db/index.ts).
+  // Esta página, somada ao polling do admin (me/notificações/poll-updates),
+  // estourava o limite e a tela ficava presa no skeleton. Rodar em série mantém
+  // a concorrência baixa; o custo total é de ~1–2s, aceitável para o financeiro.
+  const kpis = await financeKpis();
+  const monthly = await revenueByMonth(12);
+  const byStatus = await reservationsByStatus();
+  const byMethod = await paymentsByMethod();
 
   const cards = [
     { icon: TrendingUp, label: "Receita confirmada", value: formatCentsBRL(kpis.confirmedRevenueCents), hint: `${kpis.confirmedCount} reserva(s)`, tone: "text-green-700 bg-green-50" },
