@@ -12,7 +12,7 @@ const stats = [
     value: siteConfig.reviews.rating.toLocaleString("pt-BR", {
       minimumFractionDigits: 1,
     }),
-    label: "no Airbnb",
+    label: `no ${siteConfig.reviews.source}`,
   },
 ];
 
@@ -23,21 +23,21 @@ export function About() {
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Texto */}
           <Reveal className="order-2 lg:order-1">
-            <span className="eyebrow">A Casa Carram</span>
+            <span className="eyebrow">A Casa da Nete</span>
             <h2 className="mt-4 text-3xl leading-[1.1] sm:text-4xl lg:text-[2.75rem]">
-              Um respiro contemporâneo na Cidade Imperial
+              Aconchego pertinho do mar, em Arraial do Cabo
             </h2>
             <div className="mt-6 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
               <p>
-                Cercada pelo verde de {siteConfig.location.city}, a Casa Carram
-                foi pensada para quem quer desacelerar sem abrir mão do conforto.
-                Ambientes integrados, muita luz natural e uma decoração leve
-                criam a atmosfera perfeita para recarregar as energias.
+                Em Monte Alto, {siteConfig.location.city}, a Casa da Nete foi
+                pensada para quem quer descansar com o mar logo ali. Suítes
+                confortáveis, café da manhã caprichado e um clima de casa criam a
+                atmosfera perfeita para recarregar as energias.
               </p>
               <p>
-                A piscina, o deck de madeira e a hidromassagem se abrem para a
-                paisagem da serra — o cenário ideal para um dia de sol ou uma
-                noite tranquila sob as estrelas.
+                O Espaço Aconchego reúne redes, jogos para a família, lareira e
+                churrasqueira — e a praia de Massambaba fica a apenas 30 passos,
+                para um dia de sol e mergulho.
               </p>
             </div>
 

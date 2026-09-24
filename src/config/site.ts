@@ -10,19 +10,19 @@
  *   - Valores marcados com "TODO_CLIENTE" precisam ser confirmados/substituídos
  *     pelo proprietário antes da publicação. Veja docs/client-content-checklist.md
  *
- * Fatos confirmados a partir do anúncio público (Airbnb) e das fotos:
- *   - Nome: Casa Carram — "Uma Casa para se Apaixonar"
- *   - Local: Petrópolis, Região Serrana do Rio de Janeiro, Brasil
- *   - Casa inteira · 4 hóspedes · 2 quartos · 3 camas · 2,5 banheiros
- *   - Avaliação: 5,0 (12 avaliações) — "Favorito dos hóspedes" no Airbnb
- *   - Comodidades confirmadas: piscina, Wi-Fi, estacionamento gratuito,
- *     hidromassagem, cozinha, churrasqueira.
+ * Fatos confirmados a partir do site oficial (casadanete.com.br):
+ *   - Nome: Pousada Casa da Nete — "A 30 passos da praia"
+ *   - Local: Monte Alto, Arraial do Cabo, Região dos Lagos, RJ, Brasil
+ *   - Pousada com 5 suítes (Nete, Vitor, Marreta, Loft Hugo, Lavínia)
+ *   - Café da manhã servido das 7h às 9h; espaço de lazer "Aconchego"
+ *   - Reserva feita diretamente pelo WhatsApp: +55 (21) 98233-1649
+ *   - Instagram: @casadanete
  */
 
 /** URL pública do site (usada em canonical, Open Graph, sitemap). */
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "https://www.casacarram.com.br"; // TODO_CLIENTE: confirmar domínio final
+  "https://www.casadanete.com.br";
 
 export type NavItem = {
   label: string;
@@ -30,88 +30,88 @@ export type NavItem = {
 };
 
 export const siteConfig = {
-  name: "Casa Carram",
-  shortName: "Carram",
-  /** Assinatura do próprio anúncio — usada como subtítulo do hero. */
-  tagline: "Uma casa para se apaixonar",
-  legalName: "Casa Carram", // TODO_CLIENTE: razão social / responsável legal
+  name: "Casa da Nete",
+  shortName: "Casa da Nete",
+  /** Assinatura da própria pousada — usada como subtítulo do hero. */
+  tagline: "A 30 passos da praia, em Arraial do Cabo",
+  legalName: "Pousada Casa da Nete",
 
   /** Descrição padrão para SEO (até ~160 caracteres). */
   description:
-    "Refúgio contemporâneo na serra de Petrópolis, RJ. Arquitetura minimalista, piscina e Mata Atlântica para você desacelerar. Reserve a Casa Carram.",
+    "Pousada aconchegante em Monte Alto, Arraial do Cabo (RJ), a 30 passos da praia de Massambaba. Café da manhã caprichado e suítes confortáveis. Reserve pelo WhatsApp.",
 
   url: SITE_URL,
 
-  /** Localização — nível de região confirmado; endereço exato pendente. */
+  /** Localização — confirmada pelo site: Monte Alto, Arraial do Cabo. */
   location: {
-    city: "Petrópolis",
-    region: "Região Serrana do Rio de Janeiro",
+    city: "Arraial do Cabo",
+    region: "Região dos Lagos",
     state: "RJ",
     country: "Brasil",
-    /** Endereço completo não divulgado publicamente pelo anúncio. */
-    addressLine: "Endereço completo enviado após a reserva", // TODO_CLIENTE
-    /** Consulta usada no Google Maps (região, não endereço exato). */
-    mapsQuery: "Petrópolis, Rio de Janeiro, Brasil",
-    mapsUrl: "https://www.google.com/maps/place/Petr%C3%B3polis+-+RJ",
+    /** Bairro/distrito da pousada, a poucos passos da praia de Massambaba. */
+    addressLine: "Monte Alto, Arraial do Cabo — RJ", // TODO_CLIENTE: número/rua exatos
+    /** Consulta usada no Google Maps. */
+    mapsQuery: "Pousada Casa da Nete, Monte Alto, Arraial do Cabo - RJ",
+    mapsUrl:
+      "https://www.google.com/maps/place/Monte+Alto,+Arraial+do+Cabo+-+RJ",
     mapsEmbedSrc:
-      "https://www.google.com/maps?q=Petr%C3%B3polis,%20Rio%20de%20Janeiro,%20Brasil&z=12&output=embed",
-    /** Coordenadas aproximadas do município (centro), não da casa. */
-    approxLatLng: { lat: -22.505, lng: -43.178 },
+      "https://www.google.com/maps?q=Monte%20Alto,%20Arraial%20do%20Cabo%20-%20RJ&z=14&output=embed",
+    /** Coordenadas aproximadas de Monte Alto (Arraial do Cabo). */
+    approxLatLng: { lat: -22.9483, lng: -42.0389 }, // TODO_CLIENTE: coordenadas exatas
   },
 
-  /** Canais de contato. Números são PLACEHOLDER — substituir antes de publicar. */
+  /** Canais de contato — WhatsApp confirmado pelo site oficial. */
   contact: {
-    // TODO_CLIENTE: número real com DDI+DDD, apenas dígitos (ex.: 5524999998888)
-    whatsapp: "5524999999999",
-    whatsappIsPlaceholder: true,
-    // TODO_CLIENTE
-    phoneDisplay: "+55 (24) 99999-9999",
-    phoneE164: "+5524999999999",
-    // TODO_CLIENTE
-    email: "contato@casacarram.com.br",
+    // Número real divulgado no site (DDI+DDD, apenas dígitos).
+    whatsapp: "5521982331649",
+    whatsappIsPlaceholder: false,
+    phoneDisplay: "+55 (21) 98233-1649",
+    phoneE164: "+5521982331649",
+    // TODO_CLIENTE: e-mail não divulgado publicamente no site.
+    email: "contato@casadanete.com.br",
     /** Mensagem pré-preenchida ao abrir o WhatsApp. */
     whatsappMessage:
-      "Olá! Vim pelo site da Casa Carram e gostaria de saber mais sobre a disponibilidade e valores.",
+      "Olá! Vi o site da Pousada Casa da Nete e gostaria de saber sobre disponibilidade e valores. 🧡",
   },
 
-  /** Reserva. O Airbnb é o canal de reserva REAL e confirmado. */
+  /** Reserva. O canal real e confirmado da Casa da Nete é o WhatsApp. */
   booking: {
-    airbnbUrl: "https://www.airbnb.pt/rooms/1688073569848326515",
-    // TODO_CLIENTE: adicionar link de reserva direta/Booking se houver
+    airbnbUrl: "",
+    // TODO_CLIENTE: adicionar link de reserva direta/Booking se houver.
     directUrl: "",
     /** A partir de / diária — não divulgado. Exibir "Sob consulta". */
     priceFrom: null as number | null, // TODO_CLIENTE
     currency: "BRL",
   },
 
-  /** Redes sociais. Preencher quando disponíveis. */
+  /** Redes sociais — Instagram confirmado pelo site. */
   socials: {
-    instagram: "", // TODO_CLIENTE ex.: https://instagram.com/casacarram
+    instagram: "https://instagram.com/casadanete",
     facebook: "",
   },
 
-  /** Características confirmadas da propriedade. */
+  /** Características da pousada (agregado das 5 suítes). */
   property: {
-    type: "Casa inteira",
-    guests: 4,
-    bedrooms: 2,
-    beds: 3,
-    bathrooms: "2,5",
+    type: "Pousada",
+    guests: 24, // TODO_CLIENTE: capacidade total a confirmar
+    bedrooms: 5, // 5 suítes
+    beds: 5, // TODO_CLIENTE: a confirmar
+    bathrooms: "5", // suítes com banheiro
   },
 
-  /** Prova social — dados agregados reais do anúncio (sem citações inventadas). */
+  /** Prova social. Casa da Nete exibe avaliações no Google. */
   reviews: {
-    rating: 5.0,
-    count: 12,
-    source: "Airbnb",
-    badge: "Favorito dos hóspedes",
-    url: "https://www.airbnb.pt/rooms/1688073569848326515",
+    rating: 5.0, // TODO_CLIENTE: nota real a confirmar
+    count: 12, // TODO_CLIENTE: quantidade real a confirmar
+    source: "Google",
+    badge: "Recomendada pelos hóspedes",
+    url: "", // TODO_CLIENTE: link do perfil no Google
   },
 
   /** Navegação principal (usada em navbar e footer). */
   nav: [
     { label: "Início", href: "/" },
-    { label: "A Casa", href: "/acomodacoes" },
+    { label: "A Pousada", href: "/acomodacoes" },
     { label: "Galeria", href: "/galeria" },
     { label: "Localização", href: "/localizacao" },
     { label: "Contato", href: "/contato" },

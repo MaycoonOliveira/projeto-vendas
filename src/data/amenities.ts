@@ -1,89 +1,88 @@
 import {
-  Bath,
-  Car,
+  Accessibility,
+  Bed,
+  Binoculars,
   Coffee,
+  Dices,
   Flame,
-  Footprints,
-  Mountain,
-  Plane,
-  Sparkles,
+  Ship,
+  ShowerHead,
+  Sun,
   TreePine,
   UtensilsCrossed,
   Waves,
-  Wifi,
 } from "lucide-react";
 import type { Amenity } from "@/types";
 
 /**
- * Comodidades CONFIRMADAS no anúncio e/ou visíveis nas fotos.
+ * Comodidades CONFIRMADAS no site oficial da Casa da Nete.
  * Não adicione itens não confirmados. Ver docs/content.md.
  */
 export const amenities: Amenity[] = [
   {
     icon: Waves,
-    label: "Piscina",
-    description: "Piscina ao ar livre com deck e vista para a natureza.",
+    label: "A 30 passos da praia",
+    description: "O mar logo ali, sem precisar de carro.",
   },
   {
-    icon: Bath,
-    label: "Hidromassagem",
-    description: "Área de hidromassagem para relaxar.",
+    icon: Coffee,
+    label: "Café da manhã",
+    description: "Combos caprichados servidos das 7h às 9h.",
   },
   {
-    icon: Wifi,
-    label: "Wi-Fi",
-    description: "Internet sem fio disponível na casa.",
-  },
-  {
-    icon: Car,
-    label: "Estacionamento gratuito",
-    description: "Vagas gratuitas no local.",
+    icon: Bed,
+    label: "Suítes confortáveis",
+    description: "Acomodações para casais, famílias e grupos.",
   },
   {
     icon: UtensilsCrossed,
-    label: "Cozinha equipada",
-    description: "Cozinha completa para preparar suas refeições.",
+    label: "Suítes com cozinha",
+    description: "Autonomia total no Loft Hugo e na Suíte Lavínia.",
   },
   {
     icon: Flame,
-    label: "Churrasqueira",
-    description: "Espaço para churrasco ao ar livre.",
+    label: "Lareira & churrasqueira",
+    description: "Para as noites frescas e para reunir todo mundo.",
   },
   {
-    icon: TreePine,
-    label: "Área externa",
-    description: "Deck e jardim cercados pela Mata Atlântica.",
+    icon: Dices,
+    label: "Espaço Aconchego",
+    description: "Redes, totó e jogos para todas as idades.",
   },
   {
-    icon: Mountain,
-    label: "Vista para a serra",
-    description: "Paisagem de montanha em Petrópolis.",
+    icon: Accessibility,
+    label: "Acessibilidade",
+    description: "Suíte térrea pensada para receber bem quem precisa.",
+  },
+  {
+    icon: ShowerHead,
+    label: "Chuveirão & lavabo",
+    description: "Comodidade extra na área de lazer.",
   },
 ];
 
 /**
- * Serviços e experiências oferecidos MEDIANTE CONSULTA (listados no anúncio).
- * Deixe claro que dependem de disponibilidade e podem ter custo adicional.
+ * Praias e passeios PRÓXIMOS, citados no site oficial. Distâncias podem variar.
  */
 export const experiences: Amenity[] = [
   {
-    icon: Coffee,
-    label: "Café da manhã",
-    description: "Opções de café da manhã e menu à beira da piscina.",
+    icon: TreePine,
+    label: "Praias paradisíacas",
+    description: "Prainha, Praia do Forno e Praia dos Anjos pertinho.",
   },
   {
-    icon: Footprints,
-    label: "Trilhas guiadas",
-    description: "Caminhadas guiadas pela região serrana.",
+    icon: Ship,
+    label: "Passeio de barco",
+    description: "Grutas, ilhas e praias só acessíveis pelo mar.",
   },
   {
-    icon: Sparkles,
-    label: "Massagem",
-    description: "Sessões de massagem sob agendamento.",
+    icon: Binoculars,
+    label: "Pontal do Atalaia",
+    description: "Mirante com uma das vistas mais bonitas do litoral.",
   },
   {
-    icon: Plane,
-    label: "Transfer",
-    description: "Serviço de traslado de aeroporto sob consulta.",
+    icon: Sun,
+    label: "Praia Grande",
+    description: "Extensa faixa de areia para caminhadas ao pôr do sol.",
   },
 ];

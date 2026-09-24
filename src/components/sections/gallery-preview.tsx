@@ -17,7 +17,7 @@ export function GalleryPreview() {
           <SectionHeading
             eyebrow="Galeria"
             title="Um convite ao olhar"
-            description="Passeie pelos ambientes e pela paisagem que cercam a Casa Carram."
+            description="Passeie pelos ambientes e pela paisagem que cercam a Casa da Nete."
           />
           <Link
             href="/galeria"

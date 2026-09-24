@@ -19,9 +19,9 @@ export default function OpengraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "linear-gradient(135deg, #33503f 0%, #2a4234 100%)",
+          background: "linear-gradient(135deg, #1d6a73 0%, #155058 100%)",
           padding: "72px",
-          color: "#f6f4ee",
+          color: "#fbf6ee",
           fontFamily: "Georgia, serif",
         }}
       >
@@ -38,8 +38,8 @@ export default function OpengraphImage() {
               display: "flex",
               padding: "6px 18px",
               borderRadius: 999,
-              background: "rgba(224,161,94,0.18)",
-              color: "#e0a15e",
+              background: "rgba(242,155,48,0.22)",
+              color: "#f29b30",
             }}
           >
             {siteConfig.reviews.rating.toFixed(1)} / 5

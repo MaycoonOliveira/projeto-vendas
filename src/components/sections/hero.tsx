@@ -32,17 +32,18 @@ export function Hero() {
 
       <Container className="relative z-10 pb-16 pt-32 sm:pb-20 lg:pb-28">
         <div className="max-w-2xl">
-          <p className="eyebrow text-accent-foreground/90 drop-shadow">
+          <p className="eyebrow text-white/90 drop-shadow">
             {siteConfig.name} · {siteConfig.location.city}, {siteConfig.location.state}
           </p>
 
           <h1 className="mt-4 text-4xl leading-[1.05] text-white drop-shadow-sm sm:text-5xl lg:text-6xl">
-            Uma casa para se apaixonar na serra de Petrópolis
+            O mar logo ali, a 30 passos da praia
           </h1>
 
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/85">
-            Refúgio contemporâneo com piscina e vista para a Mata Atlântica.
-            A casa inteira, só para você e seus convidados.
+            Pousada aconchegante em Monte Alto, Arraial do Cabo. Café da manhã
+            caprichado, suítes confortáveis e o sossego de quem acorda pertinho
+            do mar.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">

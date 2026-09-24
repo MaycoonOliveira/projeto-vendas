@@ -8,8 +8,11 @@ export default function AdminLoading() {
     <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-40 border-b border-border bg-white/95">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <span className="font-serif text-lg font-semibold text-foreground">
-            Casa Carram · Admin
+          <span className="font-display text-lg font-medium text-foreground">
+            Casa da Nete{" "}
+            <span className="text-sm font-medium text-muted-foreground">
+              Admin
+            </span>
           </span>
           <div className="size-9 animate-pulse rounded-full bg-foreground/10" />
         </div>

@@ -15,9 +15,9 @@ export function Location() {
     <section id="localizacao" className="scroll-mt-24 bg-muted py-24 sm:py-28">
       <Container>
         <SectionHeading
-          eyebrow="Localização"
-          title="Na serra, pertinho de tudo"
-          description={`A Casa Carram fica em ${location.city}, na ${location.region}, cercada pela Mata Atlântica.`}
+          eyebrow="Onde estamos"
+          title="Pertinho da praia, em Monte Alto"
+          description={`A Casa da Nete fica em Monte Alto, ${location.city}, na ${location.region} — a 30 passos da praia de Massambaba.`}
         />
 
         <div className="mt-14 grid gap-8 lg:grid-cols-5">
@@ -64,7 +64,7 @@ export function Location() {
 
               <div className="mt-7 border-t border-border pt-6">
                 <h3 className="text-sm font-semibold text-foreground">
-                  Por perto, em Petrópolis
+                  Por perto, em Arraial do Cabo
                 </h3>
                 <ul className="mt-4 space-y-4">
                   {pointsOfInterest.map((poi) => (

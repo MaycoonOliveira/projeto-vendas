@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AtSign, Mail, MapPin, Phone } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { Container } from "@/components/ui/container";
+import { BrandMark } from "@/components/brand/logo";
 import { ReserveButton, WhatsappButton } from "@/components/cta";
 import { buildPhoneUrl } from "@/lib/whatsapp";
 
@@ -20,11 +21,14 @@ export function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* Marca */}
           <div className="lg:col-span-2">
-            <p className="font-display text-2xl">{siteConfig.name}</p>
+            <p className="inline-flex items-center gap-2.5 font-display text-2xl">
+              <BrandMark className="size-9 shrink-0" />
+              {siteConfig.name}
+            </p>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Refúgio contemporâneo em {location.city}, na{" "}
-              {location.region}. Piscina, deck e Mata Atlântica para você
-              desacelerar.
+              Pousada aconchegante em Monte Alto, {location.city}, a 30 passos da
+              praia de Massambaba. Café da manhã caprichado e sossego pertinho do
+              mar.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <ReserveButton size="sm" source="footer" />

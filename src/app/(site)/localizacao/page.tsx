@@ -6,7 +6,7 @@ import { CtaBand } from "@/components/sections/cta-band";
 export const metadata: Metadata = {
   title: "Localização",
   description:
-    "A Casa Carram fica em Petrópolis, na região serrana do Rio de Janeiro, cercada pela Mata Atlântica e perto do centro histórico.",
+    "A Casa da Nete fica em Monte Alto, Arraial do Cabo (RJ), a 30 passos da praia de Massambaba e pertinho das praias e passeios mais procurados da cidade.",
   alternates: { canonical: "/localizacao" },
 };
 
@@ -15,8 +15,8 @@ export default function LocalizacaoPage() {
     <>
       <PageHeader
         eyebrow="Localização"
-        title="Na serra fluminense, cercada de natureza"
-        description="Petrópolis une o charme da Cidade Imperial ao verde da Mata Atlântica."
+        title="Pertinho da praia, em Monte Alto"
+        description="Em Arraial do Cabo, a 30 passos da praia de Massambaba e das praias mais bonitas da Região dos Lagos."
       />
       <Location />
       <CtaBand />

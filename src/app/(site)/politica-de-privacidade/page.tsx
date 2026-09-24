@@ -6,7 +6,7 @@ import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
   title: "Política de Privacidade",
-  description: "Política de privacidade e tratamento de dados da Casa Carram.",
+  description: "Política de privacidade e tratamento de dados da Casa da Nete.",
   alternates: { canonical: "/politica-de-privacidade" },
   robots: { index: false, follow: true },
 };
@@ -62,8 +62,8 @@ export default function PrivacidadePage() {
             <div>
               <h2>5. Compartilhamento</h2>
               <p>
-                Reservas realizadas pelo Airbnb são regidas pela política de
-                privacidade da própria plataforma.
+                O atendimento e as reservas feitas pelo WhatsApp seguem também a
+                política de privacidade do próprio aplicativo.
               </p>
             </div>
 

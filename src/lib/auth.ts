@@ -61,14 +61,14 @@ export const auth = betterAuth({
       const resetUrl = `${base}/admin/redefinir-senha?token=${encodeURIComponent(token)}`;
       await sendEmail({
         to: user.email,
-        subject: "Redefinição de senha — Casa Carram",
-        text: `Recebemos um pedido para redefinir a senha do painel da Casa Carram.
+        subject: "Redefinição de senha — Casa da Nete",
+        text: `Recebemos um pedido para redefinir a senha do painel da Casa da Nete.
 
 Abra o link abaixo (expira em 30 minutos):
 ${resetUrl}
 
 Se você não solicitou, ignore este e-mail — sua senha permanece a mesma.`,
-        html: `<p>Recebemos um pedido para redefinir a senha do painel da Casa Carram.</p>
+        html: `<p>Recebemos um pedido para redefinir a senha do painel da Casa da Nete.</p>
 <p><a href="${resetUrl}">Redefinir minha senha</a> (o link expira em 30 minutos).</p>
 <p>Se você não solicitou, ignore este e-mail — sua senha permanece a mesma.</p>`,
       });

@@ -1,30 +1,30 @@
-import { Leaf, Mountain, Sparkles, Waves } from "lucide-react";
+import { Coffee, Sparkles, Umbrella, Waves } from "lucide-react";
 import type { Differential } from "@/types";
 
-/** Diferenciais — todos derivados de fatos confirmados da propriedade. */
+/** Diferenciais — todos derivados de fatos confirmados da pousada. */
 export const differentials: Differential[] = [
   {
-    icon: Sparkles,
-    title: "Arquitetura para se apaixonar",
-    description:
-      "Design contemporâneo, linhas limpas e ambientes integrados que convidam ao descanso.",
-  },
-  {
     icon: Waves,
-    title: "Piscina & deck com vista",
+    title: "A 30 passos da praia",
     description:
-      "Piscina ao ar livre, deck de madeira e hidromassagem para aproveitar o sol da serra.",
+      "O mar logo ali, sem precisar de carro: a praia de Massambaba fica pertinho da pousada.",
   },
   {
-    icon: Leaf,
-    title: "Imersa na Mata Atlântica",
+    icon: Coffee,
+    title: "Café da manhã caprichado",
     description:
-      "Cercada pelo verde de Petrópolis, na região serrana do Rio de Janeiro.",
+      "Combos para todos os gostos — de tapioca a cuscuz com bacon — servidos das 7h às 9h.",
   },
   {
-    icon: Mountain,
-    title: "Favorito dos hóspedes",
+    icon: Umbrella,
+    title: "Espaço Aconchego",
     description:
-      "Avaliação 5,0 no Airbnb e o selo de Favorito dos hóspedes já na estreia.",
+      "Área de lazer com redes, totó, jogos, lareira e churrasqueira para toda a família.",
+  },
+  {
+    icon: Sparkles,
+    title: "Recomendada pelos hóspedes",
+    description:
+      "Suítes confortáveis, atendimento próximo e ótimas avaliações de quem já se hospedou.",
   },
 ];

@@ -8,7 +8,7 @@ import { galleryImages } from "@/data/gallery";
 export const metadata: Metadata = {
   title: "Galeria",
   description:
-    "Fotos da Casa Carram em Petrópolis: arquitetura contemporânea, piscina, deck, área externa e a paisagem da serra.",
+    "Fotos da Casa da Nete em Arraial do Cabo: fachada, suítes, Espaço Aconchego e o café da manhã da pousada.",
   alternates: { canonical: "/galeria" },
 };
 
@@ -18,7 +18,7 @@ export default function GaleriaPage() {
       <PageHeader
         eyebrow="Galeria"
         title="Cada detalhe, um convite"
-        description="Explore os ambientes da casa e a natureza que a cerca. Toque em qualquer foto para ampliar."
+        description="Explore as suítes, a área de lazer e o café da manhã da pousada. Toque em qualquer foto para ampliar."
       />
       <section className="py-16 sm:py-20">
         <Container>

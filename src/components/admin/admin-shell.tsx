@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 import { signOutAction } from "@/app/admin/actions";
+import { BrandLockup, BrandMark } from "@/components/brand/logo";
 import { NotificationBell } from "@/components/admin/notification-bell";
 import { Toaster } from "@/components/admin/toaster";
 import { usePollUpdates } from "@/components/admin/use-poll-updates";
@@ -74,8 +75,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-6">
-            <Link href="/admin" className="font-serif text-lg font-semibold text-foreground">
-              Casa Carram · Admin
+            <Link href="/admin" aria-label="Casa da Nete — Painel">
+              <BrandLockup subtitle="Admin" />
             </Link>
             <nav className="hidden items-center gap-4 text-sm lg:flex" aria-label="Navegação admin">
               {navItems.map(([href, label]) => (
@@ -147,7 +148,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 )}
               >
                 <div className="flex h-14 items-center justify-between border-b border-border px-5">
-                  <span className="font-serif text-base font-semibold">Painel</span>
+                  <span className="inline-flex items-center gap-2">
+                    <BrandMark className="size-7" />
+                    <span className="font-display text-base font-medium">Painel</span>
+                  </span>
                   <button
                     type="button"
                     onClick={() => setOpen(false)}

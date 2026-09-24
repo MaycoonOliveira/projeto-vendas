@@ -1,35 +1,36 @@
 import type { PointOfInterest } from "@/types";
 
 /**
- * Pontos de interesse em Petrópolis (marcos públicos e conhecidos da cidade).
+ * Pontos de interesse em Arraial do Cabo (praias e passeios conhecidos da
+ * cidade), citados no site oficial da Casa da Nete.
  *
  * NÃO informamos distâncias nem tempos de deslocamento (não confirmados).
- * TODO_CLIENTE: se desejar, acrescente distâncias reais a partir da casa.
+ * TODO_CLIENTE: se desejar, acrescente distâncias reais a partir da pousada.
  */
 export const pointsOfInterest: PointOfInterest[] = [
   {
-    name: "Centro Histórico de Petrópolis",
+    name: "Praia de Massambaba",
     description:
-      "A charmosa Cidade Imperial, com ruas arborizadas, cafés e arquitetura histórica.",
+      "A praia mais próxima — a apenas 30 passos da pousada, com faixa de areia extensa.",
   },
   {
-    name: "Museu Imperial",
+    name: "Prainha",
     description:
-      "Antigo palácio de verão de Dom Pedro II, um dos museus mais visitados do país.",
+      "Uma das praias mais famosas de Arraial do Cabo, de águas cristalinas.",
   },
   {
-    name: "Catedral São Pedro de Alcântara",
+    name: "Praia do Forno & Praia dos Anjos",
     description:
-      "Templo em estilo neogótico que guarda o mausoléu da família imperial.",
+      "Enseadas paradisíacas, ponto de partida dos passeios de barco pela região.",
   },
   {
-    name: "Palácio de Cristal",
+    name: "Pontal do Atalaia",
     description:
-      "Estrutura de ferro e vidro do século XIX, cercada por jardins.",
+      "Mirante com uma das vistas mais bonitas do litoral fluminense.",
   },
   {
-    name: "Mata Atlântica & trilhas",
+    name: "Passeio de barco",
     description:
-      "Natureza exuberante da região serrana, com trilhas e mirantes.",
+      "Roteiro clássico pelas grutas, ilhas e praias só acessíveis pelo mar.",
   },
 ];

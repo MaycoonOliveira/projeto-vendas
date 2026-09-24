@@ -9,7 +9,7 @@ export function Differentials() {
       <Container>
         <SectionHeading
           align="center"
-          eyebrow="Por que a Casa Carram"
+          eyebrow="Por que a Casa da Nete"
           title="Feita para momentos que ficam na memória"
           description="Cada detalhe pensado para o seu descanso — do design da casa à paisagem que a cerca."
           className="mx-auto"

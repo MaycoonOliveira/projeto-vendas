@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { Container } from "@/components/ui/container";
+import { BrandMark } from "@/components/brand/logo";
 import { ReserveButton, WhatsappButton } from "@/components/cta";
 import { cn } from "@/lib/utils";
 
@@ -57,13 +58,18 @@ export function Navbar() {
       <Container className="flex h-16 items-center justify-between gap-4 lg:h-20">
         <Link
           href="/"
-          className={cn(
-            "font-display text-xl tracking-tight transition-colors sm:text-2xl",
-            solid ? "text-foreground" : "text-white",
-          )}
+          className="inline-flex items-center gap-2.5"
           aria-label={`${siteConfig.name} — página inicial`}
         >
-          {siteConfig.name}
+          <BrandMark className="size-8 shrink-0 sm:size-9" />
+          <span
+            className={cn(
+              "font-display text-xl tracking-tight transition-colors sm:text-2xl",
+              solid ? "text-foreground" : "text-white",
+            )}
+          >
+            {siteConfig.name}
+          </span>
         </Link>
 
         {/* Navegação desktop */}
@@ -151,7 +157,12 @@ export function Navbar() {
                 )}
               >
                 <div className="flex h-16 items-center justify-between px-6">
-                  <span className="font-display text-xl">{siteConfig.name}</span>
+                  <span className="inline-flex items-center gap-2.5">
+                    <BrandMark className="size-8 shrink-0" />
+                    <span className="font-display text-xl">
+                      {siteConfig.name}
+                    </span>
+                  </span>
                   <button
                     type="button"
                     onClick={() => setOpen(false)}

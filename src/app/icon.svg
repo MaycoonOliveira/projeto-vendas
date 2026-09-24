@@ -1,5 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#33503f" />
-  <text x="50%" y="50%" dy="2" text-anchor="middle" dominant-baseline="middle"
-    font-family="Georgia, 'Times New Roman', serif" font-size="38" fill="#f6f4ee">C</text>
+  <rect width="64" height="64" rx="14" fill="#1d6a73" />
+  <!-- sol -->
+  <circle cx="24" cy="24" r="8" fill="#f29b30" />
+  <!-- casa -->
+  <path d="M18 44 L32 32 L46 44 Z" fill="none" stroke="#fbf6ee" stroke-width="3.2"
+    stroke-linejoin="round" />
+  <rect x="22" y="43" width="20" height="9" rx="1.5" fill="none" stroke="#fbf6ee"
+    stroke-width="3.2" stroke-linejoin="round" />
 </svg>

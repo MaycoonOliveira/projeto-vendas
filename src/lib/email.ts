@@ -25,7 +25,7 @@ function getResend(): Resend | null {
 
 export async function sendEmail({ to, subject, html, text }: SendArgs): Promise<void> {
   const resend = getResend();
-  const from = process.env.EMAIL_FROM ?? "Casa Carram <onboarding@resend.dev>";
+  const from = process.env.EMAIL_FROM ?? "Casa da Nete <onboarding@resend.dev>";
 
   if (!resend) {
     console.info(

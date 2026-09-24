@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Fraunces, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { siteConfig, SITE_URL } from "@/config/site";
 
@@ -9,28 +9,28 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-dm-sans",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${siteConfig.name} — Refúgio na serra de ${siteConfig.location.city}`,
+    default: `${siteConfig.name} — Pousada em ${siteConfig.location.city}, ${siteConfig.location.state}`,
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
   keywords: [
-    "Casa Carram",
-    "pousada Petrópolis",
-    "casa de temporada Petrópolis",
-    "aluguel de temporada serra",
-    "hospedagem Petrópolis RJ",
-    "casa com piscina Petrópolis",
-    "refúgio na serra",
+    "Casa da Nete",
+    "Pousada Casa da Nete",
+    "pousada Arraial do Cabo",
+    "pousada Monte Alto",
+    "hospedagem Arraial do Cabo RJ",
+    "pousada perto da praia",
+    "praia de Massambaba",
   ],
   authors: [{ name: siteConfig.name }],
   creator: siteConfig.name,
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#33503f",
+  themeColor: "#1d6a73",
   colorScheme: "light",
 };
 
@@ -65,7 +65,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${fraunces.variable} ${inter.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="min-h-full">{children}</body>
     </html>

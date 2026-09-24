@@ -7,7 +7,7 @@ import { ReservationFlow } from "./reservation-flow";
 export const metadata: Metadata = {
   title: "Reservar",
   description:
-    "Consulte a disponibilidade da Casa Carram em Petrópolis e solicite sua reserva.",
+    "Consulte a disponibilidade da Casa da Nete em Petrópolis e solicite sua reserva.",
   alternates: { canonical: "/reservar" },
 };
 

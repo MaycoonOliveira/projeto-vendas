@@ -2,34 +2,39 @@
 
 /*
  * ===========================================================================
- * DESIGN SYSTEM — Casa Carram
+ * DESIGN SYSTEM — Casa da Nete
  * ---------------------------------------------------------------------------
- * Paleta inspirada na serra: verde da Mata Atlântica (primary), tom argila
- * (accent) e uma base off-white acolhedora. Tema único e claro, com a
- * fotografia como protagonista. Ver docs/design-system.md.
+ * Paleta praiana e acolhedora de Arraial do Cabo: verde-azulado do mar (teal,
+ * primary), terracota do sol (accent) e uma base areia/creme quente. Texto em
+ * marrom quente. Tema único e claro, com a fotografia como protagonista.
+ * Valores extraídos do site oficial casadanete.com.br. Tipografia: Fraunces
+ * (títulos) + DM Sans (texto), as mesmas famílias do site do cliente.
  * ===========================================================================
  */
 
 @theme {
   /* Cores — base */
-  --color-background: #fbf9f5;
+  --color-background: #fbf6ee;
   --color-surface: #ffffff;
-  --color-foreground: #1f1d1a;
-  --color-muted: #f2ede4;
-  --color-muted-foreground: #6e6a62;
-  --color-border: #e7e1d6;
+  --color-foreground: #3b2a1e;
+  --color-muted: #f2ede3;
+  --color-muted-foreground: #8a6a52;
+  --color-border: #e7dccb;
 
-  /* Cores — marca */
-  --color-primary: #33503f;
-  --color-primary-hover: #2a4234;
-  --color-primary-foreground: #f6f4ee;
-  --color-accent: #b9704b;
-  --color-accent-foreground: #ffffff;
+  /* Cores — marca (teal do mar + terracota do sol) */
+  --color-primary: #1d6a73;
+  --color-primary-hover: #155058;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #f29b30;
+  --color-accent-hover: #d9871f;
+  --color-accent-foreground: #3b2113;
+  /* Terracota escurecida para texto/links (contraste AA sobre fundo claro) */
+  --color-accent-strong: #a85a12;
 
   /* Tipografia */
   --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
   --font-sans:
-    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    var(--font-dm-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif;
 
   /* Raio e sombras */
@@ -142,5 +147,5 @@
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--color-accent-strong);
 }

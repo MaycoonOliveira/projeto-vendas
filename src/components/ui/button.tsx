@@ -14,7 +14,7 @@ export const buttonVariants = cva(
         primary:
           "bg-primary text-primary-foreground hover:bg-primary-hover shadow-[var(--shadow-soft)]",
         accent:
-          "bg-accent text-accent-foreground hover:bg-[#a5623f] shadow-[var(--shadow-soft)]",
+          "bg-accent text-accent-foreground hover:bg-[var(--color-accent-hover)] shadow-[var(--shadow-soft)]",
         outline:
           "border border-foreground/20 bg-transparent text-foreground hover:bg-foreground/5",
         ghost: "bg-transparent text-foreground hover:bg-foreground/5",

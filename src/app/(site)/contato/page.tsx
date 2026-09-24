@@ -10,7 +10,7 @@ import { buildPhoneUrl, buildWhatsappUrl } from "@/lib/whatsapp";
 export const metadata: Metadata = {
   title: "Contato",
   description:
-    "Fale com a Casa Carram pelo WhatsApp, telefone ou e-mail e reserve sua estadia em Petrópolis.",
+    "Fale com a Casa da Nete pelo WhatsApp, telefone ou e-mail e reserve sua estadia em Petrópolis.",
   alternates: { canonical: "/contato" },
 };
 
@@ -91,7 +91,7 @@ export default function ContatoPage() {
                   Consulte disponibilidade e reserve
                 </h2>
                 <p className="mt-2 text-primary-foreground/80">
-                  A reserva é feita com segurança pelo anúncio oficial no Airbnb.
+                  A reserva é feita diretamente com a gente pelo WhatsApp.
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">

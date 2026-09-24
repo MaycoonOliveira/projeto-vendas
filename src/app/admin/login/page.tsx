@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect as navRedirect } from "next/navigation";
 
 import { getSession } from "@/lib/dal";
+import { BrandLogoImage } from "@/components/brand/logo";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
@@ -31,11 +32,19 @@ export default async function AdminLoginPage({
   return (
     <div className="flex min-h-dvh items-center justify-center bg-muted px-4 py-12">
       <div className="w-full max-w-sm rounded-2xl border border-foreground/10 bg-white p-8 shadow-[var(--shadow-soft)]">
-        <div className="mb-6 text-center">
-          <h1 className="font-serif text-2xl font-semibold text-foreground">
-            Casa Carram
+        <div className="mb-6 flex flex-col items-center text-center">
+          <BrandLogoImage
+            width={132}
+            height={132}
+            priority
+            className="mb-3 h-24 w-24 rounded-2xl object-contain"
+          />
+          <h1 className="font-display text-2xl font-medium text-foreground">
+            Casa da Nete
           </h1>
-          <p className="mt-1 text-sm text-foreground/60">Painel administrativo</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Painel administrativo
+          </p>
         </div>
         {reset ? (
           <p className="mb-5 rounded-lg bg-green-50 px-3 py-2 text-center text-sm text-green-700">

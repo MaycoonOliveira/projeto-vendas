@@ -31,7 +31,7 @@ export async function sendReservationRequestedEmails(args: {
   const guestText = [
     `Olá, ${firstName(guest.fullName)}!`,
     ``,
-    `Recebemos sua solicitação de reserva na Casa Carram. Ela está PENDENTE de confirmação.`,
+    `Recebemos sua solicitação de reserva na Casa da Nete. Ela está PENDENTE de confirmação.`,
     ``,
     `Código: ${r.publicCode}`,
     `Acomodação: ${accommodationName}`,
@@ -44,7 +44,7 @@ export async function sendReservationRequestedEmails(args: {
   ].join("\n");
   const guestHtml = `
     <p>Olá, ${firstName(guest.fullName)}!</p>
-    <p>Recebemos sua solicitação de reserva na <strong>Casa Carram</strong>. Ela está <strong>pendente</strong> de confirmação.</p>
+    <p>Recebemos sua solicitação de reserva na <strong>Casa da Nete</strong>. Ela está <strong>pendente</strong> de confirmação.</p>
     <ul>
       <li><strong>Código:</strong> ${r.publicCode}</li>
       <li><strong>Acomodação:</strong> ${accommodationName}</li>

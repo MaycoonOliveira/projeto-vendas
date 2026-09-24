@@ -91,9 +91,9 @@ export function Accommodations({ withHeading = true }: { withHeading?: boolean }
         {withHeading ? (
           <SectionHeading
             align="center"
-            eyebrow="A acomodação"
-            title="A casa inteira, só para o seu grupo"
-            description="Privacidade e conforto do começo ao fim da sua estadia."
+            eyebrow="A pousada"
+            title="Escolha a sua suíte"
+            description="Suítes confortáveis para casais, famílias e grupos, pertinho do mar."
             className="mx-auto mb-16"
           />
         ) : null}

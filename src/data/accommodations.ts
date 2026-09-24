@@ -2,35 +2,37 @@ import { galleryImages } from "@/data/gallery";
 import type { Accommodation } from "@/types";
 
 /**
- * A Casa Carram é alugada como casa inteira (não por quartos). Apresentamos
- * uma única "acomodação" com os números CONFIRMADOS. A estrutura é um array
- * para permitir novas unidades no futuro sem mudar os componentes.
+ * A Casa da Nete é uma pousada com suítes (Nete, Vitor, Marreta, Loft Hugo e
+ * Lavínia). Aqui apresentamos uma visão geral da pousada para o site público —
+ * o inventário real e detalhado é gerenciado no painel administrativo.
  *
- * Não inventamos distribuição de camas por quarto nem metragem (não divulgadas).
+ * A estrutura é um array para permitir novas unidades sem mudar os componentes.
+ * Capacidades totais são aproximadas (a confirmar).
  */
 export const accommodations: Accommodation[] = [
   {
+    // slug interno mantido (chave de rota/lógica) — não é texto de marca.
     slug: "casa-carram",
-    name: "A Casa Carram",
+    name: "As suítes da Casa da Nete",
     summary:
-      "Casa inteira e exclusiva para você e seus convidados, em meio à serra de Petrópolis.",
+      "Suítes confortáveis para casais, famílias e grupos, a 30 passos da praia de Massambaba.",
     description: [
-      "A Casa Carram é um refúgio contemporâneo pensado para desacelerar. Ambientes integrados, muita luz natural e uma decoração leve criam a atmosfera perfeita para um fim de semana especial.",
-      "Do lado de fora, a piscina, o deck de madeira e a hidromassagem se abrem para o verde da Mata Atlântica — o cenário ideal para um dia de sol ou uma noite tranquila sob o céu da serra.",
-      "Você tem a casa inteira só para o seu grupo: cozinha equipada, churrasqueira, Wi-Fi e estacionamento gratuito no local.",
+      "A Casa da Nete é uma pousada acolhedora em Monte Alto, Arraial do Cabo. As suítes foram pensadas para diferentes grupos — da queridinha Suíte Nete, com rede privativa e vista parcial para o mar, à ampla Suíte Lavínia, com cozinha integrada.",
+      "Algumas suítes têm cozinha (Loft Hugo e Lavínia) e a Suíte Marreta é térrea, pensada para receber bem quem precisa de mais acessibilidade.",
+      "Todos os hóspedes contam com café da manhã caprichado e o Espaço Aconchego: redes, totó, jogos, lareira e churrasqueira para toda a família.",
     ],
     image: galleryImages[6],
     capacity: {
-      guests: 4,
-      bedrooms: 2,
-      beds: 3,
-      bathrooms: "2,5",
+      guests: 24,
+      bedrooms: 5,
+      beds: 5,
+      bathrooms: "5",
     },
     highlights: [
-      "Casa inteira e privativa",
-      "Piscina, deck e hidromassagem",
-      "Cozinha equipada e churrasqueira",
-      "Vista para a serra e Mata Atlântica",
+      "5 suítes para diferentes grupos",
+      "A 30 passos da praia de Massambaba",
+      "Café da manhã e Espaço Aconchego",
+      "Suíte térrea com acessibilidade",
     ],
   },
 ];

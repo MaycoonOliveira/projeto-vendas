@@ -6,7 +6,7 @@ import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
   title: "Termos de Uso",
-  description: "Termos de uso do site da Casa Carram.",
+  description: "Termos de uso do site da Casa da Nete.",
   alternates: { canonical: "/termos" },
   robots: { index: false, follow: true },
 };
@@ -35,10 +35,10 @@ export default function TermosPage() {
             <div>
               <h2>2. Reservas e pagamentos</h2>
               <p>
-                As reservas são realizadas por meio do anúncio oficial no Airbnb.
-                Os valores, a disponibilidade, as condições de pagamento e as
-                políticas de cancelamento seguem as regras da plataforma e do
-                anúncio no momento da reserva.
+                As reservas são realizadas diretamente com a pousada pelo
+                WhatsApp. Os valores, a disponibilidade, as condições de
+                pagamento e as políticas de cancelamento são informados e
+                confirmados com a gente no momento da reserva.
               </p>
             </div>
 

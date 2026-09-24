@@ -34,7 +34,7 @@ export function HowItWorks() {
           align="center"
           eyebrow="Reserva direta, sem intermediários"
           title="Como funciona"
-          description="Reservar na Casa Carram é simples e transparente — em três passos."
+          description="Reservar na Casa da Nete é simples e transparente — em três passos."
           className="mx-auto"
         />
 

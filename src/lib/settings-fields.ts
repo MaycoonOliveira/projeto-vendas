@@ -53,7 +53,7 @@ export type SettingField = {
 
 export const SETTING_FIELDS: readonly SettingField[] = [
   // Dados da pousada
-  { key: "pousada_name", label: "Nome da pousada", type: "text", section: "pousada", placeholder: "Casa Carram" },
+  { key: "pousada_name", label: "Nome da pousada", type: "text", section: "pousada", placeholder: "Casa da Nete" },
   { key: "cnpj", label: "CNPJ", type: "text", section: "pousada", placeholder: "00.000.000/0001-00", mask: "cnpj" },
   { key: "address", label: "Endereço", type: "textarea", section: "pousada", placeholder: "Rua, nº, bairro, cidade/UF, CEP" },
   {
@@ -61,13 +61,13 @@ export const SETTING_FIELDS: readonly SettingField[] = [
     label: "WhatsApp de contato",
     type: "text",
     section: "pousada",
-    placeholder: "+55 24 99999-9999",
+    placeholder: "+55 21 98233-1649",
     mask: "phone-intl",
     required: true,
     help: "Número usado nos botões \"Falar no WhatsApp\" das telas de reserva. Obrigatório.",
   },
-  { key: "contact_email", label: "E-mail de contato", type: "email", section: "pousada", placeholder: "contato@casacarram.com.br" },
-  { key: "instagram", label: "Instagram", type: "text", section: "pousada", placeholder: "@casacarram" },
+  { key: "contact_email", label: "E-mail de contato", type: "email", section: "pousada", placeholder: "contato@casadanete.com.br" },
+  { key: "instagram", label: "Instagram", type: "text", section: "pousada", placeholder: "@casadanete" },
   { key: "facebook", label: "Facebook", type: "text", section: "pousada" },
 
   // Operação

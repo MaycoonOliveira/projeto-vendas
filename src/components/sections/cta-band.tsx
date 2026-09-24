@@ -21,10 +21,10 @@ export function CtaBand() {
       <Container className="relative z-10 py-24 sm:py-28">
         <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl leading-tight text-primary-foreground sm:text-4xl lg:text-5xl">
-            Pronto para desacelerar na serra?
+            Pronto para acordar pertinho do mar?
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg text-primary-foreground/85">
-            Consulte as datas disponíveis e garanta a sua estadia na Casa Carram.
+            Consulte as datas disponíveis e garanta a sua estadia na Casa da Nete.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <ReserveButton size="lg" variant="light" source="cta-band" />

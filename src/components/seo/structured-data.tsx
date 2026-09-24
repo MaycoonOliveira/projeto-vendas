@@ -37,7 +37,10 @@ export function StructuredData() {
       reviewCount: siteConfig.reviews.count,
       bestRating: 5,
     },
-    sameAs: [siteConfig.booking.airbnbUrl].filter(Boolean),
+    telephone: siteConfig.contact.phoneE164,
+    sameAs: [siteConfig.socials.instagram, siteConfig.socials.facebook].filter(
+      Boolean,
+    ),
   };
 
   return (

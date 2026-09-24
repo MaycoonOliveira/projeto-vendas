@@ -10,7 +10,7 @@ function isRelevantError(msg: ConsoleMessage) {
 
 test("a home carrega com título e hero", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle(/Casa Carram/i);
+  await expect(page).toHaveTitle(/Casa da Nete/i);
   await expect(
     page.getByRole("heading", { level: 1, name: /apaixonar/i }),
   ).toBeVisible();
